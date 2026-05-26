@@ -1,0 +1,27 @@
+---
+import { siteConfig } from "../data/config";
+import { gameData } from "../data/game";
+import { homeContent } from "../content/home";
+---
+
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">{homeContent.hero.eyebrow}</p>
+    <h1>{homeContent.hero.title}</h1>
+    <p>{homeContent.hero.lede}</p>
+    <div class="hero-actions">
+      <a class="button primary" href={gameData.robloxUrl} target="_blank" rel="noopener noreferrer">
+        {homeContent.hero.primaryAction}
+      </a>
+      <a class="button secondary" href="/privacy/">Review privacy</a>
+    </div>
+  </div>
+  <div class="hero-card" aria-label="Template status">
+    <img src={siteConfig.assets.hero} alt="Template hero placeholder" loading="eager" />
+    <dl>
+      <div><dt>Default output</dt><dd>Static dist/</dd></div>
+      <div><dt>Public pages</dt><dd>Home only</dd></div>
+      <div><dt>System pages</dt><dd>Privacy, Terms</dd></div>
+    </dl>
+  </div>
+</section>
