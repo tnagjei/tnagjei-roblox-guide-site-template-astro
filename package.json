@@ -1,0 +1,20 @@
+{
+  "name": "roblox-guide-site-template-astro",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/generate-seo-files.mjs",
+    "preview": "astro preview",
+    "audit:new-site": "node scripts/audit-new-site.mjs",
+    "validate:template": "node scripts/validate-template.mjs",
+    "validate:static-export": "node scripts/validate-static-export.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run audit:new-site && npm run validate:template && npm test && npm run build && npm run validate:static-export"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "typescript": "^5.7.2"
+  }
+}
