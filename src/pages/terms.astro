@@ -1,0 +1,20 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { siteConfig } from "../data/config";
+---
+
+<SiteLayout title={`Terms of Use | ${siteConfig.siteName}`} description={`Terms of use for ${siteConfig.siteName}.`} noindex>
+  <main class="content-page">
+    <section class="prose-block">
+      <p class="eyebrow">System page</p>
+      <h1>Terms of Use</h1>
+      <p>{siteConfig.siteName} is an independent fan guide template. Roblox trademarks and game assets belong to their respective owners.</p>
+      <h2>Guide content</h2>
+      <p>New sites must separate verified facts from pending claims. Do not publish active codes, rewards, values, or official claims without source evidence.</p>
+      <h2>Safety boundary</h2>
+      <p>This template does not support unsafe downloads, exploit executors, or account-risk behavior.</p>
+      <h2>Contact</h2>
+      <p>For questions, contact <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>.</p>
+    </section>
+  </main>
+</SiteLayout>
