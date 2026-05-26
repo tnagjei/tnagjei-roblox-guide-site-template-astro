@@ -1,0 +1,55 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import HomeHero from "../components/HomeHero.astro";
+import { homeContent } from "../content/home";
+import { gameData } from "../data/game";
+import { jsonLd } from "../lib/seo";
+---
+
+<SiteLayout title={homeContent.title} description={homeContent.description}>
+  <main>
+    <HomeHero />
+    <section class="section grid-section" aria-labelledby="template-rules">
+      <div>
+        <p class="eyebrow">Template rules</p>
+        <h2 id="template-rules">Launch clean, then expand</h2>
+        <p>Keep the first public surface small. Add guide pages only after evidence, metadata, sitemap, and export checks pass.</p>
+      </div>
+      <div class="card-grid">
+        {homeContent.cards.map((card) => (
+          <article class="card">
+            <h3>{card.title}</h3>
+            <p>{card.body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+    <section class="section" aria-labelledby="source-status">
+      <p class="eyebrow">Source status</p>
+      <h2 id="source-status">Evidence boundaries</h2>
+      <ul class="status-list">
+        {gameData.sourceConfidence.map((item) => (
+          <li><strong>{item.label}</strong><span>{item.level}</span></li>
+        ))}
+      </ul>
+    </section>
+    <section class="section" aria-labelledby="faq">
+      <p class="eyebrow">FAQ</p>
+      <h2 id="faq">Template FAQ</h2>
+      <div class="faq-list">
+        {homeContent.faq.map((item) => (
+          <article>
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+    <script type="application/ld+json" set:html={jsonLd({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: homeContent.title,
+      description: homeContent.description
+    })} />
+  </main>
+</SiteLayout>
