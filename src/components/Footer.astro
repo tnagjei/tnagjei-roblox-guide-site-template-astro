@@ -1,0 +1,15 @@
+---
+import { siteConfig } from "../data/config";
+---
+
+<footer class="site-footer">
+  <div>
+    <strong>{siteConfig.siteName}</strong>
+    <p>Independent fan guide template. Not affiliated with Roblox Corporation or game developers.</p>
+  </div>
+  <nav aria-label="Footer navigation">
+    <a href="/privacy/">Privacy</a>
+    <a href="/terms/">Terms</a>
+    <a href={`mailto:${siteConfig.contactEmail}`}>Contact</a>
+  </nav>
+</footer>
