@@ -1,21 +1,55 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const domain = "https://example.com";
-const routes = ["/"];
-const outDir = path.join(process.cwd(), "dist");
+const root = process.cwd();
+const distDir = path.join(root, "dist");
+const configText = fs.readFileSync(path.join(root, "src/data/config.ts"), "utf8");
+const gameText = fs.readFileSync(path.join(root, "src/data/game.ts"), "utf8");
 
-if (!fs.existsSync(outDir)) {
-  console.error("dist/ does not exist. Run astro build before generating SEO files.");
-  process.exit(1);
+function extractString(source, key, fallback = "") {
+  const match = source.match(new RegExp(`${key}:\\s*["']([^"']*)["']`, "m"));
+  return match?.[1] || fallback;
 }
 
-function absoluteUrl(route) {
-  return `${domain.replace(/\/+$/g, "")}${route.startsWith("/") ? route : `/${route}`}`;
+function extractArray(source, key) {
+  const match = source.match(new RegExp(`${key}:\\s*\\[([^\\]]*)\\]`, "m"));
+  if (!match) return [];
+  return Array.from(match[1].matchAll(/["']([^"']*)["']/g)).map((item) => item[1]);
+}
+
+function cleanBaseUrl(value) {
+  return value.replace(/\/+$/g, "");
+}
+
+function absoluteUrl(baseUrl, routePath) {
+  const normalizedPath = routePath.startsWith("/") ? routePath : `/${routePath}`;
+  return `${cleanBaseUrl(baseUrl)}${normalizedPath}`;
+}
+
+function routePath(slug) {
+  return slug ? `/${slug}/` : "/";
+}
+
+const siteName = extractString(configText, "siteName", "Example Game Guide");
+const gameName = extractString(configText, "gameName", "Example Roblox Game");
+const siteDomain = extractString(configText, "siteDomain", "https://example.com");
+const primaryKeyword = extractString(configText, "primaryKeyword", "Example Roblox Game guide");
+const completedLocales = extractArray(configText, "completedLocales");
+const completedCoreSlugs = extractArray(configText, "completedCoreSlugs");
+const completedEnglishOnlySlugs = extractArray(configText, "completedEnglishOnlySlugs");
+const robloxUrl = extractString(gameText, "robloxUrl", "https://www.roblox.com/");
+
+const routes = [
+  ...completedCoreSlugs.map((slug) => ({ slug, path: routePath(slug) })),
+  ...completedEnglishOnlySlugs.map((slug) => ({ slug, path: routePath(slug) }))
+];
+
+if (!fs.existsSync(distDir)) {
+  throw new Error("dist/ does not exist. Run astro build before generating SEO files.");
 }
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes
-  .map((route) => `  <url>\n    <loc>${absoluteUrl(route)}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${route === "/" ? "1" : "0.8"}</priority>\n  </url>`)
+  .map((route) => `  <url>\n    <loc>${absoluteUrl(siteDomain, route.path)}</loc>\n    <changefreq>${route.slug === "" ? "daily" : "weekly"}</changefreq>\n    <priority>${route.slug === "" ? "1" : "0.8"}</priority>\n  </url>`)
   .join("\n")}\n</urlset>\n`;
 
 const robots = [
@@ -31,37 +65,37 @@ const robots = [
   "User-agent: AdsBot-Google",
   "Allow: /",
   "",
-  `Sitemap: ${absoluteUrl("/sitemap.xml")}`,
+  `Sitemap: ${absoluteUrl(siteDomain, "/sitemap.xml")}`,
   ""
 ].join("\n");
 
 const llms = [
-  "# Example Game Guide",
+  `# ${siteName}`,
   "",
-  "> Astro + Cloudflare Pages Roblox guide template.",
+  `> ${siteName} is an Astro and Cloudflare Pages Roblox guide template.",
   "",
   "## Public routes",
-  `- Home: ${absoluteUrl("/")}`,
+  ...routes.map((route) => `- ${absoluteUrl(siteDomain, route.path)}`),
   "",
-  "## Template policy",
-  "- Do not publish active codes without official or in-game proof.",
-  "- Privacy and terms pages are system pages and are not listed in sitemap.",
+  "## Source policy",
+  "Do not publish active codes, rewards, values, or official claims without source evidence.",
   ""
 ].join("\n");
 
 const llmsFull = [
   llms,
-  "## Static export",
-  "- Build output directory: dist",
-  "- Deployment target: Cloudflare Pages",
-  "- Default public sitemap route count: 1",
+  "## Template configuration",
+  `- Game: ${gameName}`,
+  `- Primary keyword: ${primaryKeyword}`,
+  `- Completed locales: ${completedLocales.join(", ")}`,
+  `- Roblox URL: ${robloxUrl}`,
   ""
 ].join("\n");
 
-fs.writeFileSync(path.join(outDir, "sitemap.xml"), sitemap);
-fs.writeFileSync(path.join(outDir, "robots.txt"), robots);
-fs.writeFileSync(path.join(outDir, "llms.txt"), llms);
-fs.writeFileSync(path.join(outDir, "llms-full.txt"), llmsFull);
+fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemap);
+fs.writeFileSync(path.join(distDir, "robots.txt"), robots);
+fs.writeFileSync(path.join(distDir, "llms.txt"), llms);
+fs.writeFileSync(path.join(distDir, "llms-full.txt"), llmsFull);
 
 console.log(`Generated ${routes.length} sitemap route(s).`);
-console.log("Generated sitemap.xml, robots.txt, llms.txt, and llms-full.txt in dist/.");
+console.log("Generated static SEO files in dist/.");
