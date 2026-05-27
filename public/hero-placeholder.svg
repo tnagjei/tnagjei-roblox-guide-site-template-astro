@@ -1,1 +1,11 @@
-placeholder hero
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Astro Roblox guide hero placeholder">
+  <rect width="1200" height="675" rx="48" fill="#17241f" />
+  <circle cx="960" cy="110" r="170" fill="#2d8a4e" opacity="0.72" />
+  <circle cx="160" cy="550" r="220" fill="#facc15" opacity="0.18" />
+  <rect x="86" y="86" width="1028" height="503" rx="34" fill="#ffffff" opacity="0.08" />
+  <path d="M190 436 360 178l170 258h-96l-74-120-74 120h-96Z" fill="#facc15" />
+  <rect x="600" y="190" width="350" height="34" rx="17" fill="#ffffff" opacity="0.9" />
+  <rect x="600" y="260" width="430" height="26" rx="13" fill="#ffffff" opacity="0.55" />
+  <rect x="600" y="316" width="380" height="26" rx="13" fill="#ffffff" opacity="0.38" />
+  <rect x="600" y="410" width="210" height="56" rx="28" fill="#2d8a4e" />
+</svg>
