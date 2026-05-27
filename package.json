@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "build": "astro build && node scripts/generate-seo-files.mjs",
     "preview": "astro preview",
+    "init:new-site": "node scripts/init-new-site.mjs",
     "audit:new-site": "node scripts/audit-new-site.mjs",
     "validate:template": "node scripts/validate-template.mjs",
     "validate:static-export": "node scripts/validate-static-export.mjs",
