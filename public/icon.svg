@@ -1,1 +1,6 @@
-placeholder icon
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Astro guide template icon">
+  <rect width="512" height="512" rx="112" fill="#17241f" />
+  <circle cx="256" cy="256" r="156" fill="#2d8a4e" />
+  <path d="M160 284 256 120l96 164h-58l-38-70-38 70h-58Z" fill="#facc15" />
+  <path d="M170 342h172v42H170z" fill="#ffffff" opacity="0.92" />
+</svg>
