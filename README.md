@@ -15,7 +15,43 @@ This repository is a lightweight static-site template for new Roblox guide sites
 - Static llms.txt and llms-full.txt generation
 - SEO-safe placeholder defaults
 - Evidence-first Roblox guide workflow
+- New-site initialization script
 - GitHub Actions check on push and pull request
+
+## Create a new site
+
+After creating a repository from this template, run:
+
+```bash
+npm install
+npm run init:new-site -- \
+  --site-name "Example Game Guide" \
+  --game-name "Example Game" \
+  --domain "https://example.com" \
+  --contact-email "admin@example.com" \
+  --roblox-url "https://www.roblox.com/games/123/example"
+```
+
+Optional arguments:
+
+```text
+--primary-keyword "Example Game guide"
+--creator-name "Example Creator"
+```
+
+The initialization script updates:
+
+```text
+src/data/config.ts
+src/data/game.ts
+src/content/home.ts
+```
+
+Then run:
+
+```bash
+npm run check
+```
 
 ## New site required edits
 
@@ -121,15 +157,11 @@ Cloudflare Functions
 
 ## Launch checklist
 
-1. Replace site name.
-2. Replace game name.
-3. Replace domain.
-4. Replace contact email.
-5. Replace primary keyword.
-6. Replace homepage metadata.
-7. Replace icon and hero assets.
-8. Verify `dist/sitemap.xml` contains only completed public pages.
-9. Verify `dist/robots.txt` does not block Googlebot, Bingbot, or AdsBot-Google.
-10. Run `npm run check`.
-11. Deploy to Cloudflare Pages.
-12. Test `/`, `/privacy/`, `/terms/`, `/sitemap.xml`, `/robots.txt`, `/llms.txt`.
+1. Run `npm run init:new-site` with real game data.
+2. Replace icon and hero assets.
+3. Verify homepage metadata.
+4. Verify `dist/sitemap.xml` contains only completed public pages.
+5. Verify `dist/robots.txt` does not block Googlebot, Bingbot, or AdsBot-Google.
+6. Run `npm run check`.
+7. Deploy to Cloudflare Pages.
+8. Test `/`, `/privacy/`, `/terms/`, `/sitemap.xml`, `/robots.txt`, `/llms.txt`.
