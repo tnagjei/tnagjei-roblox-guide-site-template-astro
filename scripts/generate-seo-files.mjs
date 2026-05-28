@@ -34,15 +34,17 @@ const siteName = extractString(configText, "siteName", "Example Game Guide");
 const gameName = extractString(configText, "gameName", "Example Roblox Game");
 const siteDomain = extractString(configText, "siteDomain", "https://example.com");
 const primaryKeyword = extractString(configText, "primaryKeyword", "Example Roblox Game guide");
+const launchMode = extractString(configText, "launchMode", "minimal");
 const completedLocales = extractArray(configText, "completedLocales");
 const completedCoreSlugs = extractArray(configText, "completedCoreSlugs");
 const completedEnglishOnlySlugs = extractArray(configText, "completedEnglishOnlySlugs");
+const blockedSlugs = extractArray(configText, "blockedSlugs");
 const robloxUrl = extractString(gameText, "robloxUrl", "https://www.roblox.com/");
 
 const routes = [
   ...completedCoreSlugs.map((slug) => ({ slug, path: routePath(slug) })),
   ...completedEnglishOnlySlugs.map((slug) => ({ slug, path: routePath(slug) }))
-];
+].filter((route) => !blockedSlugs.includes(route.slug));
 
 if (!fs.existsSync(distDir)) {
   throw new Error("dist/ does not exist. Run astro build before generating SEO files.");
@@ -72,13 +74,14 @@ const robots = [
 const llms = [
   `# ${siteName}`,
   "",
-  `> ${siteName} is an Astro and Cloudflare Pages Roblox guide template.",
+  `> ${siteName} is an Astro and Cloudflare Pages Roblox guide template.`,
   "",
   "## Public routes",
   ...routes.map((route) => `- ${absoluteUrl(siteDomain, route.path)}`),
   "",
   "## Source policy",
   "Do not publish active codes, rewards, values, or official claims without source evidence.",
+  "Third-party pages are community-reported research signals only.",
   ""
 ].join("\n");
 
@@ -87,7 +90,9 @@ const llmsFull = [
   "## Template configuration",
   `- Game: ${gameName}`,
   `- Primary keyword: ${primaryKeyword}`,
+  `- Launch mode: ${launchMode}`,
   `- Completed locales: ${completedLocales.join(", ")}`,
+  `- Completed core slugs: ${completedCoreSlugs.join(", ")}`,
   `- Roblox URL: ${robloxUrl}`,
   ""
 ].join("\n");
