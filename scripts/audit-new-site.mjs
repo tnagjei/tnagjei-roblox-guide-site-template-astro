@@ -3,8 +3,10 @@ import path from "node:path";
 
 const root = process.cwd();
 const configPath = path.join(root, "src/data/config.ts");
+const gamePath = path.join(root, "src/data/game.ts");
 const violations = [];
 const warnings = [];
+const wikiHubSlugs = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
 
 function read(file) {
   return fs.readFileSync(path.join(root, file), "utf8");
@@ -65,9 +67,12 @@ if (!fs.existsSync(configPath)) {
   const siteDomain = extractString(config, "siteDomain");
   const contactEmail = extractString(config, "contactEmail");
   const primaryKeyword = extractString(config, "primaryKeyword");
+  const launchMode = extractString(config, "launchMode");
   const completedLocales = extractArray(config, "completedLocales");
+  const coreSlugs = extractArray(config, "coreSlugs");
   const completedCoreSlugs = extractArray(config, "completedCoreSlugs");
   const completedEnglishOnlySlugs = extractArray(config, "completedEnglishOnlySlugs");
+  const blockedSlugs = extractArray(config, "blockedSlugs");
   const icon = extractString(config, "icon");
   const hero = extractString(config, "hero");
 
@@ -76,11 +81,26 @@ if (!fs.existsSync(configPath)) {
   if (siteDomain === "https://example.com") reportLaunchIssue("siteDomain must be replaced before launch");
   if (contactEmail === "example@example.com") reportLaunchIssue("contactEmail must be replaced before launch");
   if (primaryKeyword === "Example Roblox Game guide") reportLaunchIssue("primaryKeyword must be replaced before launch");
-  if (completedLocales.join(",") !== "en") violations.push("default completedLocales must be [en]");
-  if (completedCoreSlugs.join(",") !== "") violations.push("default completedCoreSlugs must be homepage only");
-  if (completedEnglishOnlySlugs.length !== 0) violations.push("default completedEnglishOnlySlugs must be empty");
+  if (!siteDomain.startsWith("https://")) violations.push("siteDomain must start with https://");
+  if (completedLocales.join(",") !== "en") violations.push("completedLocales must be [en] by default");
+  if (!["minimal", "wiki-hub"].includes(launchMode)) violations.push("launchMode must be minimal or wiki-hub");
+  if (!completedCoreSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("completedCoreSlugs must be a subset of coreSlugs");
+  if (completedEnglishOnlySlugs.length !== 0) violations.push("completedEnglishOnlySlugs must be empty by default");
+  if (!["scripts", "macros", "executor", "exploit"].every((slug) => blockedSlugs.includes(slug))) {
+    violations.push("blockedSlugs must include scripts, macros, executor, and exploit");
+  }
+  if (launchMode === "minimal" && completedCoreSlugs.join(",") !== "") violations.push("minimal mode must complete homepage only");
+  if (launchMode === "wiki-hub" && completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) {
+    violations.push("wiki-hub mode must complete homepage, codes, tier-list, classes, weapons, and value-list");
+  }
   validateAsset("assets.icon", icon);
   validateAsset("assets.hero", hero);
+}
+
+if (fs.existsSync(gamePath)) {
+  const game = fs.readFileSync(gamePath, "utf8");
+  if (!game.includes("verifiedActiveCodes: []")) violations.push("verifiedActiveCodes must default to an empty array");
+  if (!game.includes("communityReportedCodes: []")) violations.push("communityReportedCodes must default to an empty array");
 }
 
 console.log("New site audit checklist:");
