@@ -3,6 +3,8 @@ import path from "node:path";
 
 const root = process.cwd();
 const args = process.argv.slice(2);
+const WIKI_HUB_SLUGS = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
+const MINIMAL_SLUGS = [""];
 
 function parseArgs(items) {
   const result = {};
@@ -22,7 +24,7 @@ function parseArgs(items) {
 }
 
 function usage() {
-  return `Usage:\n  npm run init:new-site -- --site-name "Example Guide" --game-name "Example Game" --domain "https://example.com" --contact-email "admin@example.com" --roblox-url "https://www.roblox.com/games/123/example"\n\nRequired:\n  --site-name\n  --game-name\n  --domain\n  --contact-email\n  --roblox-url\n\nOptional:\n  --primary-keyword\n  --creator-name\n`;
+  return `Usage:\n  npm run init:new-site -- --site-name "Example Guide" --game-name "Example Game" --domain "https://example.com" --contact-email "admin@example.com" --roblox-url "https://www.roblox.com/games/123/example" --launch-mode minimal\n\nRequired:\n  --site-name\n  --game-name\n  --domain\n  --contact-email\n  --roblox-url\n\nLaunch modes:\n  --launch-mode minimal\n  --launch-mode wiki-hub\n\nOptional:\n  --primary-keyword\n  --creator-name\n  --universe-id\n  --root-place-id\n  --max-players\n  --official-title\n  --genre\n`;
 }
 
 function assertRequired(options, key) {
@@ -50,12 +52,22 @@ function assertEmail(value) {
   }
 }
 
+function numberOrNull(value, label) {
+  if (!value) return null;
+  if (!/^\d+$/.test(value)) throw new Error(`${label} must be a numeric value`);
+  return Number(value);
+}
+
 function write(file, content) {
   fs.writeFileSync(path.join(root, file), `${content.trim()}\n`);
 }
 
-function escapeTemplate(value) {
-  return String(value).replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$/g, "\\$");
+function q(value) {
+  return JSON.stringify(value);
+}
+
+function packageNameFromDomain(domain) {
+  return domain.replace(/^https:\/\//, "").replace(/^www\./, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "roblox-guide-site";
 }
 
 const options = parseArgs(args);
@@ -75,25 +87,39 @@ try {
   const siteDomain = assertHttpsUrl("--domain", options.domain.trim());
   const contactEmail = options["contact-email"].trim();
   const robloxUrl = assertHttpsUrl("--roblox-url", options["roblox-url"].trim());
+  const launchMode = (options["launch-mode"] || "minimal").trim();
   const primaryKeyword = (options["primary-keyword"] || `${gameName} guide`).trim();
   const creatorName = (options["creator-name"] || "Unknown creator").trim();
+  const officialTitle = (options["official-title"] || gameName).trim();
+  const genre = (options.genre || "Roblox adventure").trim();
+  const universeId = numberOrNull(options["universe-id"], "--universe-id");
+  const rootPlaceId = numberOrNull(options["root-place-id"], "--root-place-id");
+  const maxPlayers = numberOrNull(options["max-players"], "--max-players");
+
+  if (!["minimal", "wiki-hub"].includes(launchMode)) {
+    throw new Error("--launch-mode must be minimal or wiki-hub");
+  }
 
   assertEmail(contactEmail);
+
+  const completedCoreSlugs = launchMode === "wiki-hub" ? WIKI_HUB_SLUGS : MINIMAL_SLUGS;
 
   write(
     "src/data/config.ts",
     `export const siteConfig = {
-  siteName: "${siteName}",
-  gameName: "${gameName}",
-  siteDomain: "${siteDomain}",
-  contactEmail: "${contactEmail}",
-  primaryKeyword: "${primaryKeyword}",
+  siteName: ${q(siteName)},
+  gameName: ${q(gameName)},
+  siteDomain: ${q(siteDomain)},
+  contactEmail: ${q(contactEmail)},
+  primaryKeyword: ${q(primaryKeyword)},
+  launchMode: ${q(launchMode)},
   defaultLocale: "en",
   completedLocales: ["en"],
-  coreSlugs: ["", "codes", "tier-list", "updates", "beginners-guide", "units"],
-  completedCoreSlugs: [""],
-  englishOnlySlugs: ["scripts", "value-list", "macros", "discord"],
+  coreSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
+  completedCoreSlugs: ${JSON.stringify(completedCoreSlugs)},
+  englishOnlySlugs: [],
   completedEnglishOnlySlugs: [],
+  blockedSlugs: ["scripts", "macros", "executor", "exploit"],
   analytics: {
     googleAnalyticsId: "",
     adsenseClient: "",
@@ -110,20 +136,25 @@ try {
   write(
     "src/data/game.ts",
     `export const gameData = {
-  robloxUrl: "${robloxUrl}",
-  creatorName: "${creatorName}",
-  universeId: null,
+  robloxUrl: ${q(robloxUrl)},
+  creatorName: ${q(creatorName)},
+  universeId: ${universeId === null ? "null" : universeId},
+  rootPlaceId: ${rootPlaceId === null ? "null" : rootPlaceId},
+  maxPlayers: ${maxPlayers === null ? "null" : maxPlayers},
+  officialTitle: ${q(officialTitle)},
+  genre: ${q(genre)},
   sourceConfidence: [
     { label: "Roblox game page", level: "pending" },
-    { label: "Official social links", level: "pending" },
+    { label: "Roblox public API", level: "pending" },
+    { label: "Official channels", level: "pending" },
     { label: "In-game checks", level: "pending" }
   ],
   codes: {
     verifiedActiveCodes: [],
     pendingCodes: [],
     communityReportedCodes: [],
-    officialStatus: "No verified official codes yet",
-    verificationPolicy: "Do not publish active codes without official or in-game proof."
+    officialStatus: "No verified official active codes yet",
+    verificationPolicy: "Do not publish active codes as verified without official or in-game proof."
   }
 };`
   );
@@ -132,31 +163,69 @@ try {
     "src/content/home.ts",
     `import { siteConfig } from "../data/config";
 
+export const wikiLinks = [
+  { title: "Codes", slug: "codes", description: "Track official and community-reported code status without inventing active rewards." },
+  { title: "Tier List", slug: "tier-list", description: "Compare community-reported rankings without presenting them as official." },
+  { title: "Classes", slug: "classes", description: "Map reported class roles and evidence status." },
+  { title: "Weapons", slug: "weapons", description: "Organize reported weapons without fake stats, DPS, or rarity claims." },
+  { title: "Value List", slug: "value-list", description: "Record reported value priority without fabricating trading prices or odds." }
+];
+
 export const homeContent = {
-  title: \`${escapeTemplate(siteName)} | Roblox Game Guide\`,
-  description: \`${escapeTemplate(siteName)} is an evidence-first guide for ${escapeTemplate(gameName)} on Roblox.\`,
+  title: \`\${siteConfig.siteName} | Roblox Wiki Hub\`,
+  description: \`\${siteConfig.siteName} is an evidence-first Roblox wiki hub for codes, tier lists, classes, weapons, and value tracking.\`,
   hero: {
-    eyebrow: "Independent Roblox guide",
-    title: \`${escapeTemplate(gameName)} Guide\`,
-    lede: "This site starts with verified source boundaries. Add codes, value lists, unit stats, and strategy pages only after evidence checks pass.",
+    eyebrow: "Roblox wiki hub",
+    title: \`\${siteConfig.gameName} Wiki Hub\`,
+    lede: "Community-reported information is labeled as unverified until official, Roblox API, or in-game proof exists.",
     primaryAction: "Open Roblox page"
   },
-  cards: [
-    { title: "Evidence first", body: "Separate verified facts from pending claims before publishing guide pages." },
-    { title: "Minimal launch", body: "Start with the homepage, privacy page, and terms page only." },
-    { title: "Cloudflare-ready", body: "Build static files to dist/ and deploy with Cloudflare Pages." }
+  quickFacts: [
+    { label: "Evidence policy", value: "Verified / community-reported / pending" },
+    { label: "Launch mode", value: siteConfig.launchMode },
+    { label: "Static output", value: "Cloudflare Pages dist/" }
+  ],
+  trendingSearches: [
+    \`\${siteConfig.gameName} codes\`,
+    \`\${siteConfig.gameName} tier list\`,
+    \`\${siteConfig.gameName} classes\`,
+    \`\${siteConfig.gameName} weapons\`,
+    \`\${siteConfig.gameName} value list\`
+  ],
+  wikiLinks,
+  guideMap: [
+    { step: "1", title: "Collect sources", body: "Start from the Roblox page, official channels, public API data, and in-game checks." },
+    { step: "2", title: "Label evidence", body: "Separate verified facts from community-reported and pending notes." },
+    { step: "3", title: "Publish only completed pages", body: "Pages enter sitemap only after completedCoreSlugs includes them." }
   ],
   faq: [
-    { q: "Is this an official website?", a: "No. This is an independent fan guide unless official ownership is verified." },
-    { q: "Can I publish active codes immediately?", a: "No. Active codes require official or in-game proof." }
+    { q: "Are community-reported codes verified?", a: "No. They are research signals until independently confirmed." },
+    { q: "Can this template publish a value list?", a: "Yes, but only as reported value priority unless verified trading data exists." }
   ]
 };`
   );
+
+  write(
+    "astro.config.mjs",
+    `import { defineConfig } from "astro/config";
+
+export default defineConfig({
+  site: ${q(siteDomain)},
+  output: "static",
+  trailingSlash: "always"
+});`
+  );
+
+  const packagePath = path.join(root, "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  packageJson.name = packageNameFromDomain(siteDomain);
+  fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
 
   console.log("New Astro Roblox guide site initialized.");
   console.log(`- Site: ${siteName}`);
   console.log(`- Game: ${gameName}`);
   console.log(`- Domain: ${siteDomain}`);
+  console.log(`- Launch mode: ${launchMode}`);
   console.log("Next: run npm run check");
 } catch (error) {
   console.error("init:new-site failed:");
