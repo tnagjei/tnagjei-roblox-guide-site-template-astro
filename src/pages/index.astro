@@ -3,36 +3,94 @@ import SiteLayout from "../layouts/SiteLayout.astro";
 import HomeHero from "../components/HomeHero.astro";
 import { homeContent } from "../content/home";
 import { gameData } from "../data/game";
+import { evidenceNotice, reportedCodeRows } from "../data/reported-guides";
 import { jsonLd } from "../lib/seo";
 ---
 
 <SiteLayout title={homeContent.title} description={homeContent.description}>
   <main>
     <HomeHero />
-    <section class="section grid-section" aria-labelledby="template-rules">
+
+    <section class="section" aria-labelledby="wiki-entry">
+      <p class="eyebrow">Wiki index</p>
+      <h2 id="wiki-entry">Core guide entrances</h2>
+      <div class="card-grid hub-grid">
+        {homeContent.wikiLinks.map((link) => (
+          <a class="card hub-card" href={`/${link.slug}/`}>
+            <h3>{link.title}</h3>
+            <p>{link.description}</p>
+            <span>Open {link.title}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section grid-section" aria-labelledby="quick-facts">
       <div>
-        <p class="eyebrow">Template rules</p>
-        <h2 id="template-rules">Launch clean, then expand</h2>
-        <p>Keep the first public surface small. Add guide pages only after evidence, metadata, sitemap, and export checks pass.</p>
+        <p class="eyebrow">Quick facts</p>
+        <h2 id="quick-facts">Launch facts</h2>
+        <p>Use this hub to publish only the pages that pass source and static export checks.</p>
       </div>
       <div class="card-grid">
-        {homeContent.cards.map((card) => (
+        {homeContent.quickFacts.map((fact) => (
           <article class="card">
-            <h3>{card.title}</h3>
-            <p>{card.body}</p>
+            <h3>{fact.label}</h3>
+            <p>{fact.value}</p>
           </article>
         ))}
       </div>
     </section>
+
+    <section class="section" aria-labelledby="trending-searches">
+      <p class="eyebrow">Trending searches</p>
+      <h2 id="trending-searches">Search demand map</h2>
+      <div class="tag-list">
+        {homeContent.trendingSearches.map((query) => <span>{query}</span>)}
+      </div>
+    </section>
+
+    <section class="section grid-section" aria-labelledby="reported-code-watch">
+      <div>
+        <p class="eyebrow">Reported code watch</p>
+        <h2 id="reported-code-watch">Community code signals</h2>
+        <p>{evidenceNotice.communityReportedLabel}</p>
+      </div>
+      <div class="card-grid">
+        {reportedCodeRows.map((row) => (
+          <article class="card">
+            <h3>{row.code}</h3>
+            <p>{row.reward}</p>
+            <p class="source-label">{row.sourceLabel}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="guide-map">
+      <p class="eyebrow">Guide map</p>
+      <h2 id="guide-map">Evidence-first publishing flow</h2>
+      <div class="card-grid">
+        {homeContent.guideMap.map((item) => (
+          <article class="card">
+            <p class="eyebrow">Step {item.step}</p>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="source-status">
-      <p class="eyebrow">Source status</p>
-      <h2 id="source-status">Evidence boundaries</h2>
+      <p class="eyebrow">Evidence boundaries</p>
+      <h2 id="source-status">{evidenceNotice.title}</h2>
+      <p>{evidenceNotice.body}</p>
       <ul class="status-list">
         {gameData.sourceConfidence.map((item) => (
           <li><strong>{item.label}</strong><span>{item.level}</span></li>
         ))}
       </ul>
     </section>
+
     <section class="section" aria-labelledby="faq">
       <p class="eyebrow">FAQ</p>
       <h2 id="faq">Template FAQ</h2>
