@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/generate-seo-files.mjs",
+    "build": "node scripts/generate-favicons.mjs && astro build && node scripts/generate-seo-files.mjs",
     "preview": "astro preview",
     "init:new-site": "node scripts/init-new-site.mjs",
     "audit:new-site": "node scripts/audit-new-site.mjs",
