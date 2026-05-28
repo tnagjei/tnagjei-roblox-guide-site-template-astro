@@ -1,24 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const distDir = path.join(process.cwd(), "dist");
-const required = [
-  "index.html",
-  "privacy/index.html",
-  "terms/index.html",
-  "sitemap.xml",
-  "robots.txt",
-  "llms.txt",
-  "llms-full.txt"
-];
-
-const allowedHtml = new Set([
-  "index.html",
-  "privacy/index.html",
-  "terms/index.html"
-]);
-
+const root = process.cwd();
+const distDir = path.join(root, "dist");
+const configText = fs.readFileSync(path.join(root, "src/data/config.ts"), "utf8");
 const violations = [];
+
+function extractString(source, key, fallback = "") {
+  const match = source.match(new RegExp(`${key}:\\s*[\"']([^\"']*)[\"']`, "m"));
+  return match?.[1] || fallback;
+}
+
+function extractArray(source, key) {
+  const match = source.match(new RegExp(`${key}:\\s*\\[([^\\]]*)\\]`, "m"));
+  if (!match) return [];
+  return Array.from(match[1].matchAll(/[\"']([^\"']*)[\"']/g)).map((item) => item[1]);
+}
 
 function listFiles(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -27,6 +24,22 @@ function listFiles(dir) {
     return entry.isDirectory() ? listFiles(fullPath) : [fullPath];
   });
 }
+
+function htmlForSlug(slug) {
+  return slug === "" ? "index.html" : `${slug}/index.html`;
+}
+
+function pathForSlug(slug) {
+  return slug === "" ? "/" : `/${slug}/`;
+}
+
+const siteDomain = extractString(configText, "siteDomain", "https://example.com").replace(/\/+$/g, "");
+const completedCoreSlugs = extractArray(configText, "completedCoreSlugs");
+const completedEnglishOnlySlugs = extractArray(configText, "completedEnglishOnlySlugs");
+const blockedSlugs = extractArray(configText, "blockedSlugs");
+const completedSlugs = [...completedCoreSlugs, ...completedEnglishOnlySlugs].filter((slug) => !blockedSlugs.includes(slug));
+const expectedHtml = new Set(["privacy/index.html", "terms/index.html", ...completedSlugs.map(htmlForSlug)]);
+const required = ["sitemap.xml", "robots.txt", "llms.txt", "llms-full.txt", ...expectedHtml];
 
 if (!fs.existsSync(distDir)) {
   violations.push("dist/ must exist after build");
@@ -42,35 +55,43 @@ const files = listFiles(distDir).map((file) => path.relative(distDir, file));
 const htmlFiles = files.filter((file) => file.endsWith(".html"));
 
 for (const html of htmlFiles) {
-  if (!allowedHtml.has(html)) {
+  if (!expectedHtml.has(html)) {
     violations.push(`Unexpected HTML output: dist/${html}`);
   }
 }
 
-const sitemap = fs.existsSync(path.join(distDir, "sitemap.xml")) ? fs.readFileSync(path.join(distDir, "sitemap.xml"), "utf8") : "";
-const robots = fs.existsSync(path.join(distDir, "robots.txt")) ? fs.readFileSync(path.join(distDir, "robots.txt"), "utf8") : "";
-
+const sitemapPath = path.join(distDir, "sitemap.xml");
+const robotsPath = path.join(distDir, "robots.txt");
+const sitemap = fs.existsSync(sitemapPath) ? fs.readFileSync(sitemapPath, "utf8") : "";
+const robots = fs.existsSync(robotsPath) ? fs.readFileSync(robotsPath, "utf8") : "";
 const sitemapLocs = Array.from(sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)).map((match) => match[1]);
 
-if (sitemapLocs.length !== 1) {
-  violations.push(`sitemap must contain exactly 1 URL by default, got ${sitemapLocs.length}`);
+if (sitemapLocs.length !== completedSlugs.length) {
+  violations.push(`sitemap URL count must equal completed slug count ${completedSlugs.length}, got ${sitemapLocs.length}`);
 }
 
-if (sitemap.includes("/privacy/")) violations.push("sitemap must not include /privacy/");
-if (sitemap.includes("/terms/")) violations.push("sitemap must not include /terms/");
-if (sitemap.includes("/codes/")) violations.push("sitemap must not include unfinished /codes/");
-if (sitemap.includes("/zh-tw/")) violations.push("sitemap must not include unfinished /zh-tw/");
+for (const slug of completedSlugs) {
+  const expectedUrl = `${siteDomain}${pathForSlug(slug)}`;
+  if (!sitemapLocs.includes(expectedUrl)) {
+    violations.push(`sitemap missing completed route: ${expectedUrl}`);
+  }
+}
 
-if (!robots.includes("User-agent: Googlebot")) violations.push("robots must include Googlebot rule");
-if (!robots.includes("User-agent: Bingbot")) violations.push("robots must include Bingbot rule");
-if (!robots.includes("User-agent: AdsBot-Google")) violations.push("robots must include AdsBot-Google rule");
-if (!robots.includes("Sitemap: https://example.com/sitemap.xml")) violations.push("robots must include absolute sitemap URL");
+for (const forbidden of ["/privacy/", "/terms/", "/zh-tw/", "/th/", "/scripts/", "/macros/", "/executor/", "/exploit/"]) {
+  if (sitemap.includes(forbidden)) violations.push(`sitemap must not include ${forbidden}`);
+}
+
+for (const bot of ["Googlebot", "Bingbot", "AdsBot-Google"]) {
+  if (!robots.includes(`User-agent: ${bot}`)) violations.push(`robots must include ${bot} rule`);
+}
+
+if (!robots.includes(`Sitemap: ${siteDomain}/sitemap.xml`)) {
+  violations.push("robots must include sitemap URL using current siteDomain");
+}
 
 if (violations.length > 0) {
   console.error("Static export validation failed:");
-  for (const violation of violations) {
-    console.error(`- ${violation}`);
-  }
+  for (const violation of violations) console.error(`- ${violation}`);
   process.exit(1);
 }
 
