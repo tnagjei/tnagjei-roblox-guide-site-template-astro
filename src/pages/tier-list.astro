@@ -1,0 +1,28 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { siteConfig } from "../data/config";
+import { evidenceNotice, reportedClassTiers } from "../data/reported-guides";
+---
+
+<SiteLayout title={`Tier List | ${siteConfig.siteName}`} description={`Community-reported tier list research for ${siteConfig.gameName}.`}>
+  <main class="content-page">
+    <section class="prose-block">
+      <p class="eyebrow">Tier list</p>
+      <h1>{siteConfig.gameName} Tier List</h1>
+      <p>{evidenceNotice.body}</p>
+      <p>This page does not claim to be an official ranking.</p>
+    </section>
+    <section class="section">
+      <h2>Reported tiers</h2>
+      <div class="card-grid">
+        {reportedClassTiers.map((tier) => (
+          <article class="card">
+            <h3>Tier {tier.tier}</h3>
+            <p>{tier.items.join(", ")}</p>
+            <p class="source-label">{tier.sourceLabel}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+</SiteLayout>
