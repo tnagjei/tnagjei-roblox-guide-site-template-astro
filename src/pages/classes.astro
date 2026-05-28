@@ -1,0 +1,28 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { siteConfig } from "../data/config";
+import { evidenceNotice, reportedClasses } from "../data/reported-guides";
+---
+
+<SiteLayout title={`Classes | ${siteConfig.siteName}`} description={`Community-reported class guide research for ${siteConfig.gameName}.`}>
+  <main class="content-page">
+    <section class="prose-block">
+      <p class="eyebrow">Classes</p>
+      <h1>{siteConfig.gameName} Classes</h1>
+      <p>{evidenceNotice.body}</p>
+    </section>
+    <section class="section">
+      <h2>Reported classes</h2>
+      <div class="card-grid">
+        {reportedClasses.map((item) => (
+          <article class="card">
+            <h3>{item.name}</h3>
+            <p>Reported role: {item.role}</p>
+            <p>{item.note}</p>
+            <p class="source-label">{item.sourceLabel}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+</SiteLayout>
