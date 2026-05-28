@@ -1,0 +1,29 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { siteConfig } from "../data/config";
+import { evidenceNotice, reportedCodeRows } from "../data/reported-guides";
+---
+
+<SiteLayout title={`Codes | ${siteConfig.siteName}`} description={`Community-reported and pending code status for ${siteConfig.gameName}.`}>
+  <main class="content-page">
+    <section class="prose-block">
+      <p class="eyebrow">Codes</p>
+      <h1>{siteConfig.gameName} Codes</h1>
+      <p>{evidenceNotice.body}</p>
+      <p class="source-label">{evidenceNotice.communityReportedLabel}</p>
+    </section>
+    <section class="section">
+      <h2>Reported code watch</h2>
+      <div class="card-grid">
+        {reportedCodeRows.map((row) => (
+          <article class="card">
+            <h3>{row.code}</h3>
+            <p>Reported reward: {row.reward}</p>
+            <p>Status: {row.status}</p>
+            <p class="source-label">{row.sourceLabel}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+</SiteLayout>
