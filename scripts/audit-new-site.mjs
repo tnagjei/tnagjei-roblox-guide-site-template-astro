@@ -6,7 +6,8 @@ const configPath = path.join(root, "src/data/config.ts");
 const gamePath = path.join(root, "src/data/game.ts");
 const violations = [];
 const warnings = [];
-const wikiHubSlugs = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
+const wikiHubSlugs = ["", "codes", "guide", "tier-list", "classes", "updates"];
+const expectedLocales = ["en", "th", "fil", "id"];
 
 function read(file) {
   return fs.readFileSync(path.join(root, file), "utf8");
@@ -68,10 +69,12 @@ if (!fs.existsSync(configPath)) {
   const contactEmail = extractString(config, "contactEmail");
   const primaryKeyword = extractString(config, "primaryKeyword");
   const launchMode = extractString(config, "launchMode");
+  const availableLocales = extractArray(config, "availableLocales");
   const completedLocales = extractArray(config, "completedLocales");
   const coreSlugs = extractArray(config, "coreSlugs");
   const completedCoreSlugs = extractArray(config, "completedCoreSlugs");
   const completedEnglishOnlySlugs = extractArray(config, "completedEnglishOnlySlugs");
+  const navigationSlugs = extractArray(config, "navigationSlugs");
   const blockedSlugs = extractArray(config, "blockedSlugs");
   const icon = extractString(config, "icon");
   const hero = extractString(config, "hero");
@@ -82,16 +85,18 @@ if (!fs.existsSync(configPath)) {
   if (contactEmail === "example@example.com") reportLaunchIssue("contactEmail must be replaced before launch");
   if (primaryKeyword === "Example Roblox Game guide") reportLaunchIssue("primaryKeyword must be replaced before launch");
   if (!siteDomain.startsWith("https://")) violations.push("siteDomain must start with https://");
-  if (completedLocales.join(",") !== "en") violations.push("completedLocales must be [en] by default");
+  if (availableLocales.join(",") !== expectedLocales.join(",")) violations.push("availableLocales must be en, th, fil, id");
+  if (completedLocales.join(",") !== "en") violations.push("completedLocales must default to en only");
   if (!["minimal", "wiki-hub"].includes(launchMode)) violations.push("launchMode must be minimal or wiki-hub");
   if (!completedCoreSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("completedCoreSlugs must be a subset of coreSlugs");
   if (completedEnglishOnlySlugs.length !== 0) violations.push("completedEnglishOnlySlugs must be empty by default");
+  if (!navigationSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("navigationSlugs must be a subset of coreSlugs");
   if (!["scripts", "macros", "executor", "exploit"].every((slug) => blockedSlugs.includes(slug))) {
     violations.push("blockedSlugs must include scripts, macros, executor, and exploit");
   }
   if (launchMode === "minimal" && completedCoreSlugs.join(",") !== "") violations.push("minimal mode must complete homepage only");
   if (launchMode === "wiki-hub" && completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) {
-    violations.push("wiki-hub mode must complete homepage, codes, tier-list, classes, weapons, and value-list");
+    violations.push("wiki-hub mode must complete homepage, codes, guide, tier-list, classes, and updates");
   }
   validateAsset("assets.icon", icon);
   validateAsset("assets.hero", hero);
