@@ -5,6 +5,13 @@ const root = process.cwd();
 const args = process.argv.slice(2);
 const WIKI_HUB_SLUGS = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
 const MINIMAL_SLUGS = [""];
+const WIKI_PAGE_FILES = [
+  "src/pages/codes.astro",
+  "src/pages/tier-list.astro",
+  "src/pages/classes.astro",
+  "src/pages/weapons.astro",
+  "src/pages/value-list.astro"
+];
 
 function parseArgs(items) {
   const result = {};
@@ -70,6 +77,13 @@ function packageNameFromDomain(domain) {
   return domain.replace(/^https:\/\//, "").replace(/^www\./, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase() || "roblox-guide-site";
 }
 
+function removeWikiPagesForMinimal() {
+  for (const file of WIKI_PAGE_FILES) {
+    const fullPath = path.join(root, file);
+    if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+  }
+}
+
 const options = parseArgs(args);
 
 if (options.help === "true") {
@@ -103,6 +117,8 @@ try {
   assertEmail(contactEmail);
 
   const completedCoreSlugs = launchMode === "wiki-hub" ? WIKI_HUB_SLUGS : MINIMAL_SLUGS;
+
+  if (launchMode === "minimal") removeWikiPagesForMinimal();
 
   write(
     "src/data/config.ts",
