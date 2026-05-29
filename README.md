@@ -1,26 +1,82 @@
 # Roblox Guide Site Template Astro
 
-Astro + Cloudflare Pages Roblox guide template.
+Astro + Cloudflare Pages Roblox wiki hub template.
 
-This repository is a lightweight static-site template for new Roblox guide sites. It is not a Next.js template and does not use Vercel runtime features.
+This repository is a lightweight static-site template for new Roblox guide sites. It uses static output and deploys to Cloudflare Pages with `dist/`.
 
-## Features
+## P4 default navigation
 
-- Astro static output
-- Cloudflare Pages ready
-- Minimal default public surface
-- Default public pages: `/`, `/privacy/`, `/terms/`
-- Static sitemap.xml generation
-- Static robots.txt generation
-- Static llms.txt and llms-full.txt generation
-- SEO-safe placeholder defaults
-- Evidence-first Roblox guide workflow
-- New-site initialization script
-- GitHub Actions check on push and pull request
+The default navigation is configuration-driven:
+
+```text
+Home
+Codes
+Guide
+Tier List
+Classes
+Updates
+Language
+```
+
+Language candidates are:
+
+```text
+English
+Thai
+Filipino
+Indonesian
+```
+
+Only English is completed by default. Thai, Filipino, and Indonesian are language candidates only. They must not generate pages or enter sitemap until localized content is completed.
+
+## Launch modes
+
+### minimal
+
+Publishes only:
+
+```text
+/
+/privacy/
+/terms/
+```
+
+### wiki-hub
+
+Publishes:
+
+```text
+/
+/codes/
+/guide/
+/tier-list/
+/classes/
+/updates/
+/privacy/
+/terms/
+```
+
+Privacy and terms are exported but excluded from sitemap.
+
+## Evidence policy
+
+Use three labels:
+
+```text
+verified
+community-reported
+pending
+```
+
+Verified content requires official Roblox page, Roblox public API, official channel, or in-game proof.
+
+Community-reported content is only a research signal and must not be presented as verified.
+
+Do not invent active codes, rewards, class stats, rankings, update claims, or official claims.
 
 ## Create a new site
 
-After creating a repository from this template, run:
+### Minimal launch
 
 ```bash
 npm install
@@ -29,7 +85,21 @@ npm run init:new-site -- \
   --game-name "Example Game" \
   --domain "https://example.com" \
   --contact-email "admin@example.com" \
-  --roblox-url "https://www.roblox.com/games/123/example"
+  --roblox-url "https://www.roblox.com/games/123/example" \
+  --launch-mode minimal
+```
+
+### Wiki hub launch
+
+```bash
+npm install
+npm run init:new-site -- \
+  --site-name "Example Game Guide" \
+  --game-name "Example Game" \
+  --domain "https://example.com" \
+  --contact-email "admin@example.com" \
+  --roblox-url "https://www.roblox.com/games/123/example" \
+  --launch-mode wiki-hub
 ```
 
 Optional arguments:
@@ -37,6 +107,11 @@ Optional arguments:
 ```text
 --primary-keyword "Example Game guide"
 --creator-name "Example Creator"
+--universe-id "123456"
+--root-place-id "123456"
+--max-players "12"
+--official-title "Example Game"
+--genre "Adventure"
 ```
 
 The initialization script updates:
@@ -45,93 +120,20 @@ The initialization script updates:
 src/data/config.ts
 src/data/game.ts
 src/content/home.ts
+astro.config.mjs
+package.json name
 ```
 
-Then run:
+## Required checks
+
+Run before deployment:
 
 ```bash
-npm run check
-```
-
-## New site required edits
-
-Edit these files first:
-
-```text
-src/data/config.ts
-src/data/game.ts
-src/content/home.ts
-public/icon.svg
-public/hero-placeholder.svg
-```
-
-Required replacements before launch:
-
-```text
-siteName
-gameName
-siteDomain
-contactEmail
-primaryKeyword
-Roblox official URL
-homepage title
-homepage description
-icon asset
-hero asset
-```
-
-Do not publish active codes, rewards, value data, official claims, or Discord links without source evidence.
-
-## Local development
-
-```bash
-npm install
-npm run dev
-```
-
-## Validation
-
-Run before every commit and deployment:
-
-```bash
-npm run check
-```
-
-Expanded command chain:
-
-```text
-npm run audit:new-site
 npm run validate:template
 npm test
 npm run build
 npm run validate:static-export
-```
-
-## Default SEO surface
-
-The default template only exposes the homepage in sitemap:
-
-```text
-/
-```
-
-System pages are exported but not listed in sitemap:
-
-```text
-/privacy/
-/terms/
-```
-
-The default build must produce:
-
-```text
-dist/index.html
-dist/privacy/index.html
-dist/terms/index.html
-dist/sitemap.xml
-dist/robots.txt
-dist/llms.txt
-dist/llms-full.txt
+npm run check
 ```
 
 ## Cloudflare Pages
@@ -144,24 +146,3 @@ Build command: npm run build
 Build output directory: dist
 Node.js version: 20 or 22
 ```
-
-Do not use:
-
-```text
-next build
-next start
-Vercel runtime
-Cloudflare Workers
-Cloudflare Functions
-```
-
-## Launch checklist
-
-1. Run `npm run init:new-site` with real game data.
-2. Replace icon and hero assets.
-3. Verify homepage metadata.
-4. Verify `dist/sitemap.xml` contains only completed public pages.
-5. Verify `dist/robots.txt` does not block Googlebot, Bingbot, or AdsBot-Google.
-6. Run `npm run check`.
-7. Deploy to Cloudflare Pages.
-8. Test `/`, `/privacy/`, `/terms/`, `/sitemap.xml`, `/robots.txt`, `/llms.txt`.
