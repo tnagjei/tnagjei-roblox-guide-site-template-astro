@@ -3,7 +3,8 @@ import path from "node:path";
 
 const root = process.cwd();
 const violations = [];
-const wikiHubSlugs = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
+const wikiHubSlugs = ["", "codes", "guide", "tier-list", "classes", "updates"];
+const expectedLocales = ["en", "th", "fil", "id"];
 
 const requiredFiles = [
   "astro.config.mjs",
@@ -12,15 +13,17 @@ const requiredFiles = [
   "src/data/game.ts",
   "src/data/reported-guides.ts",
   "src/content/home.ts",
+  "src/lib/navigation.ts",
   "src/pages/index.astro",
   "src/pages/privacy.astro",
   "src/pages/terms.astro",
   "src/pages/codes.astro",
+  "src/pages/guide.astro",
   "src/pages/tier-list.astro",
   "src/pages/classes.astro",
-  "src/pages/weapons.astro",
-  "src/pages/value-list.astro",
+  "src/pages/updates.astro",
   "src/layouts/SiteLayout.astro",
+  "src/components/Header.astro",
   "scripts/generate-favicons.mjs",
   "scripts/generate-seo-files.mjs",
   "scripts/init-new-site.mjs",
@@ -41,7 +44,12 @@ const forbiddenPaths = [
   "src/pages/scripts.astro",
   "src/pages/macros.astro",
   "src/pages/executor.astro",
-  "src/pages/exploit.astro"
+  "src/pages/exploit.astro",
+  "src/pages/weapons.astro",
+  "src/pages/value-list.astro",
+  "src/pages/th.astro",
+  "src/pages/fil.astro",
+  "src/pages/id.astro"
 ];
 
 function exists(file) {
@@ -93,13 +101,26 @@ if (exists("src/data/config.ts")) {
   const launchMode = extractString(config, "launchMode");
   const coreSlugs = extractArray(config, "coreSlugs");
   const completedCoreSlugs = extractArray(config, "completedCoreSlugs");
+  const navigationSlugs = extractArray(config, "navigationSlugs");
+  const availableLocales = extractArray(config, "availableLocales");
+  const completedLocales = extractArray(config, "completedLocales");
   const blockedSlugs = extractArray(config, "blockedSlugs");
 
   if (launchMode !== "wiki-hub") violations.push("template default launchMode must be wiki-hub");
-  if (completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("template default completedCoreSlugs must be wiki-hub slugs");
+  if (completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("template default completedCoreSlugs must match P4 common nav slugs");
+  if (navigationSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("navigationSlugs must match P4 common nav slugs");
   if (!completedCoreSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("completedCoreSlugs must be a subset of coreSlugs");
+  if (availableLocales.join(",") !== expectedLocales.join(",")) violations.push("availableLocales must be en, th, fil, id");
+  if (completedLocales.join(",") !== "en") violations.push("completedLocales must default to en only");
   if (!["scripts", "macros", "executor", "exploit"].every((slug) => blockedSlugs.includes(slug))) {
     violations.push("blockedSlugs must include scripts, macros, executor, exploit");
+  }
+}
+
+if (exists("src/lib/navigation.ts")) {
+  const nav = read("src/lib/navigation.ts");
+  for (const label of ["Codes", "Guide", "Tier List", "Classes", "Updates", "English", "Thai", "Filipino", "Indonesian"]) {
+    if (!nav.includes(label)) violations.push(`navigation must include ${label}`);
   }
 }
 
@@ -133,12 +154,13 @@ const scannedFiles = [
   "src/data/game.ts",
   "src/data/reported-guides.ts",
   "src/content/home.ts",
+  "src/lib/navigation.ts",
   "src/pages/index.astro",
   "src/pages/codes.astro",
+  "src/pages/guide.astro",
   "src/pages/tier-list.astro",
   "src/pages/classes.astro",
-  "src/pages/weapons.astro",
-  "src/pages/value-list.astro",
+  "src/pages/updates.astro",
   "README.md"
 ];
 
