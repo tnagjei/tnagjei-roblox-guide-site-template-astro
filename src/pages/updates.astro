@@ -1,0 +1,29 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { siteConfig } from "../data/config";
+import { evidenceNotice } from "../data/reported-guides";
+---
+
+<SiteLayout title={`Updates | ${siteConfig.siteName}`} description={`Reported and verified update notes for ${siteConfig.gameName}.`}>
+  <main class="content-page">
+    <section class="prose-block">
+      <p class="eyebrow">Updates</p>
+      <h1>{siteConfig.gameName} Updates</h1>
+      <p>{evidenceNotice.body}</p>
+      <p>Use this page to separate official update notes from community-reported patch observations and pending claims.</p>
+    </section>
+    <section class="section">
+      <h2>Update watch</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Official changelog</h3>
+          <p>Status: pending. Add only after a Roblox page, official channel, or in-game evidence is reviewed.</p>
+        </article>
+        <article class="card">
+          <h3>Community observations</h3>
+          <p>Community-reported, not independently verified.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+</SiteLayout>
