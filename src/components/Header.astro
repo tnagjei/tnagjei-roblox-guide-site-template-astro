@@ -1,5 +1,9 @@
 ---
 import { siteConfig } from "../data/config";
+import { getAvailableLocales, getMainNavItems } from "../lib/navigation";
+
+const navItems = getMainNavItems();
+const locales = getAvailableLocales();
 ---
 
 <header class="site-header">
@@ -7,12 +11,20 @@ import { siteConfig } from "../data/config";
     <span class="brand-mark">GG</span>
     <span>
       <strong>{siteConfig.siteName}</strong>
-      <small>Astro Roblox guide template</small>
+      <small>Astro Roblox wiki hub</small>
     </span>
   </a>
   <nav aria-label="Main navigation">
-    <a href="/">Home</a>
-    <a href="/privacy/">Privacy</a>
-    <a href="/terms/">Terms</a>
+    {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
   </nav>
+  <details class="language-menu">
+    <summary>Language</summary>
+    <div class="language-list">
+      {locales.map((item) => (
+        <a href={item.completed ? item.href : "#"} aria-disabled={item.completed ? "false" : "true"}>
+          {item.label}{item.completed ? "" : " · pending"}
+        </a>
+      ))}
+    </div>
+  </details>
 </header>
