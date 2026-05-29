@@ -2,15 +2,15 @@ import { siteConfig } from "../data/config";
 
 export const wikiLinks = [
   { title: "Codes", slug: "codes", description: "Track official and community-reported code status without inventing active rewards." },
+  { title: "Guide", slug: "guide", description: "Map beginner steps, core loop notes, and verified gameplay routes." },
   { title: "Tier List", slug: "tier-list", description: "Compare community-reported rankings without presenting them as official." },
   { title: "Classes", slug: "classes", description: "Map reported class roles and evidence status." },
-  { title: "Weapons", slug: "weapons", description: "Organize reported weapons without fake stats, DPS, or rarity claims." },
-  { title: "Value List", slug: "value-list", description: "Record reported value priority without fabricating trading prices or odds." }
+  { title: "Updates", slug: "updates", description: "Separate official updates from community-reported observations." }
 ];
 
 export const homeContent = {
   title: `${siteConfig.siteName} | Roblox Wiki Hub`,
-  description: `${siteConfig.siteName} is an evidence-first Roblox wiki hub template for codes, tier lists, classes, weapons, and value tracking.`,
+  description: `${siteConfig.siteName} is an evidence-first Roblox wiki hub template for codes, guide, tier list, classes, and updates.`,
   hero: {
     eyebrow: "Roblox wiki hub template",
     title: `${siteConfig.gameName} Wiki Hub`,
@@ -19,15 +19,15 @@ export const homeContent = {
   },
   quickFacts: [
     { label: "Evidence policy", value: "Verified / community-reported / pending" },
-    { label: "Default launch", value: "Minimal homepage, privacy, terms" },
-    { label: "Wiki hub mode", value: "Codes, tier list, classes, weapons, value list" }
+    { label: "Default language", value: "English" },
+    { label: "Language candidates", value: "English, Thai, Filipino, Indonesian" }
   ],
   trendingSearches: [
     `${siteConfig.gameName} codes`,
+    `${siteConfig.gameName} guide`,
     `${siteConfig.gameName} tier list`,
     `${siteConfig.gameName} classes`,
-    `${siteConfig.gameName} weapons`,
-    `${siteConfig.gameName} value list`
+    `${siteConfig.gameName} updates`
   ],
   wikiLinks,
   guideMap: [
@@ -37,6 +37,6 @@ export const homeContent = {
   ],
   faq: [
     { q: "Are community-reported codes verified?", a: "No. They are research signals until independently confirmed." },
-    { q: "Can this template publish a value list?", a: "Yes, but only as reported value priority unless verified trading data exists." }
+    { q: "Can this template publish translated pages immediately?", a: "No. A locale enters sitemap only after completedLocales includes it and localized content is ready." }
   ]
 };
