@@ -2,28 +2,34 @@
 import SiteLayout from "../layouts/SiteLayout.astro";
 import HomeHero from "../components/HomeHero.astro";
 import { homeContent } from "../content/home";
+import { siteConfig } from "../data/config";
 import { gameData } from "../data/game";
 import { evidenceNotice, reportedCodeRows } from "../data/reported-guides";
 import { jsonLd } from "../lib/seo";
+
+const completedGuideLinks = homeContent.wikiLinks.filter((link) => siteConfig.completedCoreSlugs.includes(link.slug));
+const showReportedCodeWatch = siteConfig.completedCoreSlugs.includes("codes");
 ---
 
 <SiteLayout title={homeContent.title} description={homeContent.description}>
   <main>
     <HomeHero />
 
-    <section class="section" aria-labelledby="wiki-entry">
-      <p class="eyebrow">Wiki index</p>
-      <h2 id="wiki-entry">Core guide entrances</h2>
-      <div class="card-grid hub-grid">
-        {homeContent.wikiLinks.map((link) => (
-          <a class="card hub-card" href={`/${link.slug}/`}>
-            <h3>{link.title}</h3>
-            <p>{link.description}</p>
-            <span>Open {link.title}</span>
-          </a>
-        ))}
-      </div>
-    </section>
+    {completedGuideLinks.length > 0 && (
+      <section class="section" aria-labelledby="wiki-entry">
+        <p class="eyebrow">Wiki index</p>
+        <h2 id="wiki-entry">Core guide entrances</h2>
+        <div class="card-grid hub-grid">
+          {completedGuideLinks.map((link) => (
+            <a class="card hub-card" href={`/${link.slug}/`}>
+              <h3>{link.title}</h3>
+              <p>{link.description}</p>
+              <span>Open {link.title}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
     <section class="section grid-section" aria-labelledby="quick-facts">
       <div>
@@ -49,22 +55,24 @@ import { jsonLd } from "../lib/seo";
       </div>
     </section>
 
-    <section class="section grid-section" aria-labelledby="reported-code-watch">
-      <div>
-        <p class="eyebrow">Reported code watch</p>
-        <h2 id="reported-code-watch">Community code signals</h2>
-        <p>{evidenceNotice.communityReportedLabel}</p>
-      </div>
-      <div class="card-grid">
-        {reportedCodeRows.map((row) => (
-          <article class="card">
-            <h3>{row.code}</h3>
-            <p>{row.reward}</p>
-            <p class="source-label">{row.sourceLabel}</p>
-          </article>
-        ))}
-      </div>
-    </section>
+    {showReportedCodeWatch && (
+      <section class="section grid-section" aria-labelledby="reported-code-watch">
+        <div>
+          <p class="eyebrow">Reported code watch</p>
+          <h2 id="reported-code-watch">Community code signals</h2>
+          <p>{evidenceNotice.communityReportedLabel}</p>
+        </div>
+        <div class="card-grid">
+          {reportedCodeRows.map((row) => (
+            <article class="card">
+              <h3>{row.code}</h3>
+              <p>{row.reward}</p>
+              <p class="source-label">{row.sourceLabel}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
 
     <section class="section" aria-labelledby="guide-map">
       <p class="eyebrow">Guide map</p>
