@@ -1,0 +1,64 @@
+---
+interface Props {
+  href: string;
+  external?: boolean;
+  eventName?: string;
+  eventSource?: string;
+  itemType?: string;
+  itemName?: string;
+  class?: string;
+  target?: string;
+  rel?: string;
+}
+
+const {
+  href,
+  external = false,
+  eventName = "outbound_link_click",
+  eventSource = "tracked_link",
+  itemType = "link",
+  itemName = "",
+  class: className,
+  target = external ? "_blank" : undefined,
+  rel = external ? "noopener noreferrer" : undefined
+} = Astro.props;
+---
+
+<a
+  href={href}
+  class={className}
+  target={target}
+  rel={rel}
+  data-analytics-link
+  data-external={external ? "true" : "false"}
+  data-event-name={eventName}
+  data-event-source={eventSource}
+  data-item-type={itemType}
+  data-item-name={itemName}
+>
+  <slot />
+</a>
+
+<script>
+  import { trackOutboundClick } from "../lib/analytics";
+
+  document.querySelectorAll<HTMLAnchorElement>("[data-analytics-link]").forEach((link) => {
+    if (link.dataset.analyticsBound === "true") return;
+    link.dataset.analyticsBound = "true";
+
+    link.addEventListener("click", () => {
+      if (link.dataset.external !== "true") return;
+
+      trackOutboundClick(
+        {
+          page_path: window.location.pathname,
+          event_source: link.dataset.eventSource || "tracked_link",
+          item_type: link.dataset.itemType || "link",
+          item_name: link.dataset.itemName || link.textContent?.trim() || "external_link",
+          link_url: link.href
+        },
+        link.dataset.eventName || "outbound_link_click"
+      );
+    });
+  });
+</script>
