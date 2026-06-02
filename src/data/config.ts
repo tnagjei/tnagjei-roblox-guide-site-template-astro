@@ -12,7 +12,7 @@ export const siteConfig = {
   completedCoreSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
   englishOnlySlugs: [],
   completedEnglishOnlySlugs: [],
-  blockedSlugs: ["scripts", "macros"],
+  blockedSlugs: ["scripts", "macros", "executor", "exploit"],
   navigationSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
   analytics: {
     googleAnalyticsId: "",
