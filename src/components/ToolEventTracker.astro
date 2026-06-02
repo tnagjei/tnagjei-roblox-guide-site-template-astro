@@ -1,0 +1,59 @@
+---
+interface Props {
+  toolName: string;
+  eventSource?: string;
+  inputSelector?: string;
+  resultSelector?: string;
+  inputEventName?: string;
+  resultEventName?: string;
+  debounceMs?: number;
+}
+
+const {
+  toolName,
+  eventSource = "tool",
+  inputSelector = "[data-tool-input]",
+  resultSelector = "[data-tool-result]",
+  inputEventName = "tool_input_change",
+  resultEventName = "tool_result_view",
+  debounceMs = 1000
+} = Astro.props;
+---
+
+<script define:vars={{ toolName, eventSource, inputSelector, resultSelector, inputEventName, resultEventName, debounceMs }}>
+  import { debounce, trackToolInputChange, trackToolResultView } from "../lib/analytics";
+
+  const trackInput = debounce((fieldName) => {
+    trackToolInputChange(
+      {
+        page_path: window.location.pathname,
+        event_source: eventSource,
+        tool_name: toolName,
+        field_name: fieldName
+      },
+      inputEventName
+    );
+  }, debounceMs);
+
+  document.querySelectorAll(inputSelector).forEach((input) => {
+    if (input.dataset.analyticsInputBound === "true") return;
+    input.dataset.analyticsInputBound = "true";
+
+    input.addEventListener("input", () => {
+      trackInput(input.getAttribute("name") || input.getAttribute("data-field-name") || "tool_input");
+    });
+  });
+
+  const result = document.querySelector(resultSelector);
+  if (result && result.dataset.analyticsResultViewed !== "true") {
+    result.dataset.analyticsResultViewed = "true";
+    trackToolResultView(
+      {
+        page_path: window.location.pathname,
+        event_source: eventSource,
+        tool_name: toolName
+      },
+      resultEventName
+    );
+  }
+</script>
