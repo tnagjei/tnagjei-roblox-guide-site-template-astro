@@ -74,6 +74,34 @@ Community-reported content is only a research signal and must not be presented a
 
 Do not invent active codes, rewards, class stats, rankings, update claims, or official claims.
 
+## GA4 event tracking
+
+This template includes a minimal GA4 event helper for reusable event tracking.
+
+Default template event names:
+
+```text
+copy_action
+outbound_link_click
+tool_input_change
+tool_result_view
+related_guide_click
+```
+
+Reusable files:
+
+```text
+src/lib/analytics.ts
+src/components/TrackedLink.astro
+src/components/CopyButton.astro
+src/components/ToolEventTracker.astro
+docs/ANALYTICS_EVENTS.md
+```
+
+Privacy rule: do not send email addresses, usernames, IP addresses, phone numbers, passwords, account data, or raw private user input to GA4.
+
+The helper only sends real events in production. In local development it uses `console.debug`. If `window.gtag` does not exist, no error is thrown.
+
 ## Create a new site
 
 ### Minimal launch
