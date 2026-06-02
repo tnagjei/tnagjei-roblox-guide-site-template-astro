@@ -1,0 +1,63 @@
+---
+interface Props {
+  value: string;
+  label?: string;
+  eventName?: string;
+  eventSource?: string;
+  itemType?: string;
+  itemName?: string;
+  class?: string;
+}
+
+const {
+  value,
+  label = "Copy",
+  eventName = "copy_action",
+  eventSource = "copy_button",
+  itemType = "text",
+  itemName = "copy_item",
+  class: className
+} = Astro.props;
+---
+
+<button
+  type="button"
+  class={className}
+  data-copy-button
+  data-copy-value={value}
+  data-event-name={eventName}
+  data-event-source={eventSource}
+  data-item-type={itemType}
+  data-item-name={itemName}
+>
+  {label}
+</button>
+
+<script>
+  import { trackCopyEvent } from "../lib/analytics";
+
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-button]").forEach((button) => {
+    if (button.dataset.copyBound === "true") return;
+    button.dataset.copyBound = "true";
+
+    button.addEventListener("click", async () => {
+      const value = button.dataset.copyValue || "";
+      if (!navigator.clipboard || !value) return;
+
+      try {
+        await navigator.clipboard.writeText(value);
+        trackCopyEvent(
+          {
+            page_path: window.location.pathname,
+            event_source: button.dataset.eventSource || "copy_button",
+            item_type: button.dataset.itemType || "text",
+            item_name: button.dataset.itemName || "copy_item"
+          },
+          button.dataset.eventName || "copy_action"
+        );
+      } catch {
+        // Copy failures are intentionally not tracked as successful copy events.
+      }
+    });
+  });
+</script>
