@@ -18,6 +18,11 @@ const requiredFiles = [
   "astro.config.mjs",
   "src/data/reported-guides.ts",
   "src/lib/navigation.ts",
+  "src/lib/analytics.ts",
+  "src/components/TrackedLink.astro",
+  "src/components/CopyButton.astro",
+  "src/components/ToolEventTracker.astro",
+  "docs/ANALYTICS_EVENTS.md",
   "src/pages/index.astro",
   "src/pages/privacy.astro",
   "src/pages/terms.astro",
@@ -147,4 +152,50 @@ test("init-new-site documents required arguments and optional Roblox metadata", 
   assert.ok(script.includes("src/data/config.ts"));
   assert.ok(script.includes("src/data/game.ts"));
   assert.ok(script.includes("src/content/home.ts"));
+});
+
+test("GA4 analytics helper exposes safe default events and wrappers", () => {
+  const analytics = read("src/lib/analytics.ts");
+
+  for (const name of ["copy_action", "outbound_link_click", "tool_input_change", "tool_result_view", "related_guide_click"]) {
+    assert.ok(analytics.includes(name), `analytics helper must include ${name}`);
+  }
+
+  for (const fn of ["trackEvent", "trackCopyEvent", "trackOutboundClick", "trackToolInputChange", "trackToolResultView", "debounce"]) {
+    assert.ok(analytics.includes(`function ${fn}`), `analytics helper must export ${fn}`);
+  }
+
+  assert.ok(analytics.includes("import.meta.env.PROD"));
+  assert.ok(analytics.includes("typeof window"));
+  assert.ok(analytics.includes("window.gtag"));
+  assert.ok(analytics.includes("console.debug"));
+});
+
+test("GA4 analytics blocks unsupported and private-looking parameters", () => {
+  const analytics = read("src/lib/analytics.ts");
+
+  for (const key of ["page_path", "event_source", "item_type", "item_name", "link_url", "tool_name", "field_name"]) {
+    assert.ok(analytics.includes(key), `analytics params must support ${key}`);
+  }
+
+  for (const forbidden of ["password", "phone", "email", "username", "token", "secret"]) {
+    assert.ok(analytics.includes(forbidden), `analytics helper must guard ${forbidden}`);
+  }
+});
+
+test("tracked components use default analytics events without blocking behavior", () => {
+  const trackedLink = read("src/components/TrackedLink.astro");
+  const copyButton = read("src/components/CopyButton.astro");
+  const toolTracker = read("src/components/ToolEventTracker.astro");
+  const docs = read("docs/ANALYTICS_EVENTS.md");
+
+  assert.ok(trackedLink.includes("outbound_link_click"));
+  assert.ok(trackedLink.includes("noopener noreferrer"));
+  assert.ok(copyButton.includes("copy_action"));
+  assert.ok(copyButton.includes("navigator.clipboard.writeText"));
+  assert.ok(toolTracker.includes("tool_input_change"));
+  assert.ok(toolTracker.includes("tool_result_view"));
+  assert.ok(toolTracker.includes("debounceMs = 1000"));
+  assert.ok(docs.includes("GA4"));
+  assert.ok(docs.includes("Reports > Engagement > Events"));
 });
