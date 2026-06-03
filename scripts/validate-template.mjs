@@ -3,7 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const violations = [];
-const wikiHubSlugs = ["", "codes", "guide", "tier-list", "classes", "updates"];
+const wikiHubSlugs = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
 const expectedLocales = ["en", "th", "fil", "id"];
 
 const requiredFiles = [
@@ -14,16 +14,21 @@ const requiredFiles = [
   "src/data/reported-guides.ts",
   "src/content/home.ts",
   "src/lib/navigation.ts",
+  "src/lib/analytics.ts",
   "src/pages/index.astro",
   "src/pages/privacy.astro",
   "src/pages/terms.astro",
   "src/pages/codes.astro",
-  "src/pages/guide.astro",
   "src/pages/tier-list.astro",
   "src/pages/classes.astro",
-  "src/pages/updates.astro",
+  "src/pages/weapons.astro",
+  "src/pages/value-list.astro",
   "src/layouts/SiteLayout.astro",
   "src/components/Header.astro",
+  "src/components/TrackedLink.astro",
+  "src/components/CopyButton.astro",
+  "src/components/ToolEventTracker.astro",
+  "docs/ANALYTICS_EVENTS.md",
   "scripts/generate-favicons.mjs",
   "scripts/generate-seo-files.mjs",
   "scripts/init-new-site.mjs",
@@ -45,8 +50,8 @@ const forbiddenPaths = [
   "src/pages/macros.astro",
   "src/pages/executor.astro",
   "src/pages/exploit.astro",
-  "src/pages/weapons.astro",
-  "src/pages/value-list.astro",
+  "src/pages/guide.astro",
+  "src/pages/updates.astro",
   "src/pages/th.astro",
   "src/pages/fil.astro",
   "src/pages/id.astro"
@@ -107,8 +112,8 @@ if (exists("src/data/config.ts")) {
   const blockedSlugs = extractArray(config, "blockedSlugs");
 
   if (launchMode !== "wiki-hub") violations.push("template default launchMode must be wiki-hub");
-  if (completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("template default completedCoreSlugs must match P4 common nav slugs");
-  if (navigationSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("navigationSlugs must match P4 common nav slugs");
+  if (completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("template default completedCoreSlugs must match wiki hub slugs");
+  if (navigationSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("navigationSlugs must match wiki hub slugs");
   if (!completedCoreSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("completedCoreSlugs must be a subset of coreSlugs");
   if (availableLocales.join(",") !== expectedLocales.join(",")) violations.push("availableLocales must be en, th, fil, id");
   if (completedLocales.join(",") !== "en") violations.push("completedLocales must default to en only");
@@ -119,8 +124,11 @@ if (exists("src/data/config.ts")) {
 
 if (exists("src/lib/navigation.ts")) {
   const nav = read("src/lib/navigation.ts");
-  for (const label of ["Codes", "Guide", "Tier List", "Classes", "Updates", "English", "Thai", "Filipino", "Indonesian"]) {
+  for (const label of ["Codes", "Tier List", "Classes", "Weapons", "Value List", "English", "Thai", "Filipino", "Indonesian"]) {
     if (!nav.includes(label)) violations.push(`navigation must include ${label}`);
+  }
+  for (const label of ["Guide", "Updates"]) {
+    if (nav.includes(label)) violations.push(`navigation must not include ${label}`);
   }
 }
 
@@ -135,6 +143,13 @@ if (exists("src/data/reported-guides.ts")) {
   if (reported.includes("verifiedActiveCodes")) violations.push("reported guide data must not define verified active codes");
   if (!reported.includes("community-reported")) violations.push("reported guide data must label community-reported content");
   if (!reported.includes("not independently verified")) violations.push("reported guide data must state not independently verified");
+}
+
+if (exists("src/lib/analytics.ts")) {
+  const analytics = read("src/lib/analytics.ts");
+  for (const fn of ["trackEvent", "trackCopyEvent", "trackOutboundClick", "trackToolInputChange", "trackToolResultView"]) {
+    if (!analytics.includes(fn)) violations.push(`analytics helper must include ${fn}`);
+  }
 }
 
 if (exists("public/icon.svg") && !read("public/icon.svg").includes("<svg")) violations.push("public/icon.svg must be a real SVG file");
@@ -155,12 +170,13 @@ const scannedFiles = [
   "src/data/reported-guides.ts",
   "src/content/home.ts",
   "src/lib/navigation.ts",
+  "src/lib/analytics.ts",
   "src/pages/index.astro",
   "src/pages/codes.astro",
-  "src/pages/guide.astro",
   "src/pages/tier-list.astro",
   "src/pages/classes.astro",
-  "src/pages/updates.astro",
+  "src/pages/weapons.astro",
+  "src/pages/value-list.astro",
   "README.md"
 ];
 
