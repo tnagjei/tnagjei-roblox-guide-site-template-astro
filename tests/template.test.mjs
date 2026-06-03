@@ -8,10 +8,10 @@ function read(file) {
 
 const wikiFiles = [
   "src/pages/codes.astro",
-  "src/pages/guide.astro",
   "src/pages/tier-list.astro",
   "src/pages/classes.astro",
-  "src/pages/updates.astro"
+  "src/pages/weapons.astro",
+  "src/pages/value-list.astro"
 ];
 
 const requiredFiles = [
@@ -37,7 +37,7 @@ const requiredFiles = [
   ...wikiFiles
 ];
 
-test("required Astro P4 wiki hub template files exist", () => {
+test("required Astro wiki hub template files exist", () => {
   for (const file of requiredFiles) {
     assert.equal(fs.existsSync(file), true, `${file} should exist`);
   }
@@ -52,23 +52,27 @@ test("package scripts include favicon generation, initialization, and validation
   assert.ok(packageJson.scripts.check.includes("validate:static-export"));
 });
 
-test("template defaults to P4 wiki-hub launch mode", () => {
+test("template defaults to wiki-hub launch mode", () => {
   const config = read("src/data/config.ts");
 
   assert.ok(config.includes('launchMode: "wiki-hub"'));
   assert.ok(config.includes('completedLocales: ["en"]'));
   assert.ok(config.includes('availableLocales: ["en", "th", "fil", "id"]'));
-  assert.ok(config.includes('completedCoreSlugs: ["", "codes", "guide", "tier-list", "classes", "updates"]'));
-  assert.ok(config.includes('navigationSlugs: ["", "codes", "guide", "tier-list", "classes", "updates"]'));
+  assert.ok(config.includes('completedCoreSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"]'));
+  assert.ok(config.includes('navigationSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"]'));
   assert.ok(config.includes("completedEnglishOnlySlugs: []"));
 });
 
-test("navigation exposes common guide links and language candidates", () => {
+test("navigation exposes wiki hub links and language candidates", () => {
   const navigation = read("src/lib/navigation.ts");
   const header = read("src/components/Header.astro");
 
-  for (const label of ["Codes", "Guide", "Tier List", "Classes", "Updates", "English", "Thai", "Filipino", "Indonesian"]) {
+  for (const label of ["Codes", "Tier List", "Classes", "Weapons", "Value List", "English", "Thai", "Filipino", "Indonesian"]) {
     assert.ok(navigation.includes(label), `navigation must include ${label}`);
+  }
+
+  for (const removed of ["Guide", "Updates"]) {
+    assert.equal(navigation.includes(removed), false, `navigation must not include ${removed}`);
   }
 
   assert.ok(header.includes("getMainNavItems"));
@@ -81,7 +85,6 @@ test("init-new-site supports minimal and wiki-hub launch modes", () => {
 
   assert.ok(script.includes("--launch-mode minimal"));
   assert.ok(script.includes("--launch-mode wiki-hub"));
-  assert.ok(script.includes("removeWikiPagesForMinimal"));
   assert.ok(script.includes("completedCoreSlugs"));
   assert.ok(script.includes('availableLocales: ["en", "th", "fil", "id"]'));
 });
@@ -107,8 +110,15 @@ test("completed slugs drive sitemap and static export validation", () => {
   assert.ok(validator.includes("sitemap URL count must equal completed slug count"));
 });
 
-test("unsafe pages and removed default pages are not generated", () => {
-  for (const file of ["src/pages/scripts.astro", "src/pages/macros.astro", "src/pages/executor.astro", "src/pages/exploit.astro", "src/pages/weapons.astro", "src/pages/value-list.astro"]) {
+test("unsafe pages and removed legacy pages are not generated", () => {
+  for (const file of [
+    "src/pages/scripts.astro",
+    "src/pages/macros.astro",
+    "src/pages/executor.astro",
+    "src/pages/exploit.astro",
+    "src/pages/guide.astro",
+    "src/pages/updates.astro"
+  ]) {
     assert.equal(fs.existsSync(file), false, `${file} must not exist by default`);
   }
 
