@@ -4,17 +4,17 @@ Astro + Cloudflare Pages Roblox wiki hub template.
 
 This repository is a lightweight static-site template for new Roblox guide sites. It uses static output and deploys to Cloudflare Pages with `dist/`.
 
-## P4 default navigation
+## Default navigation
 
 The default navigation is configuration-driven:
 
 ```text
 Home
 Codes
-Guide
 Tier List
 Classes
-Updates
+Weapons
+Value List
 Language
 ```
 
@@ -48,10 +48,10 @@ Publishes:
 ```text
 /
 /codes/
-/guide/
 /tier-list/
 /classes/
-/updates/
+/weapons/
+/value-list/
 /privacy/
 /terms/
 ```
@@ -72,7 +72,7 @@ Verified content requires official Roblox page, Roblox public API, official chan
 
 Community-reported content is only a research signal and must not be presented as verified.
 
-Do not invent active codes, rewards, class stats, rankings, update claims, or official claims.
+Do not invent active codes, rewards, class stats, weapon stats, rankings, value rows, or official claims.
 
 ## GA4 event tracking
 
@@ -101,6 +101,19 @@ docs/ANALYTICS_EVENTS.md
 Privacy rule: do not send email addresses, usernames, IP addresses, phone numbers, passwords, account data, or raw private user input to GA4.
 
 The helper only sends real events in production. In local development it uses `console.debug`. If `window.gtag` does not exist, no error is thrown.
+
+## Static SEO files
+
+The build generates English-named static files:
+
+```text
+sitemap.xml
+robots.txt
+llms.txt
+llms-full.txt
+```
+
+These files are written to `dist/` during `npm run build`.
 
 ## Create a new site
 
