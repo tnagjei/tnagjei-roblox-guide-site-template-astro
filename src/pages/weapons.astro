@@ -1,0 +1,31 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import RelatedGuides from "../components/RelatedGuides.astro";
+import { siteConfig } from "../data/config";
+import { evidenceNotice, reportedWeapons } from "../data/reported-guides";
+---
+
+<SiteLayout title={`Weapons | ${siteConfig.siteName}`} description={`Community-reported weapon guide research for ${siteConfig.gameName}.`}>
+  <main class="content-page">
+    <section class="prose-block">
+      <p class="eyebrow">Weapons</p>
+      <h1>{siteConfig.gameName} Weapons</h1>
+      <p>{evidenceNotice.body}</p>
+      <p>No damage, DPS, rarity, or drop data is verified by default.</p>
+    </section>
+    <section class="section">
+      <h2>Reported weapons</h2>
+      <div class="card-grid">
+        {reportedWeapons.map((item) => (
+          <article class="card">
+            <h3>{item.name}</h3>
+            <p>Reported category: {item.category}</p>
+            <p>{item.note}</p>
+            <p class="source-label">{item.sourceLabel}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+    <RelatedGuides currentSlug="weapons" />
+  </main>
+</SiteLayout>
