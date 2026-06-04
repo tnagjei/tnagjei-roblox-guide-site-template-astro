@@ -1,5 +1,6 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
+import RelatedGuides from "../components/RelatedGuides.astro";
 import { siteConfig } from "../data/config";
 import { evidenceNotice, reportedCodeRows } from "../data/reported-guides";
 ---
@@ -25,5 +26,6 @@ import { evidenceNotice, reportedCodeRows } from "../data/reported-guides";
         ))}
       </div>
     </section>
+    <RelatedGuides currentSlug="codes" />
   </main>
 </SiteLayout>
