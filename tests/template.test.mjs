@@ -14,6 +14,8 @@ const wikiFiles = [
   "src/pages/value-list.astro"
 ];
 
+const wikiSlugs = ["codes", "tier-list", "classes", "weapons", "value-list"];
+
 const requiredFiles = [
   "astro.config.mjs",
   "src/data/reported-guides.ts",
@@ -22,6 +24,7 @@ const requiredFiles = [
   "src/components/TrackedLink.astro",
   "src/components/CopyButton.astro",
   "src/components/ToolEventTracker.astro",
+  "src/components/RelatedGuides.astro",
   "docs/ANALYTICS_EVENTS.md",
   "src/pages/index.astro",
   "src/pages/privacy.astro",
@@ -78,6 +81,32 @@ test("navigation exposes wiki hub links and language candidates", () => {
   assert.ok(header.includes("getMainNavItems"));
   assert.ok(header.includes("getAvailableLocales"));
   assert.ok(header.includes("Language"));
+});
+
+test("pillar page links directly to every cluster page", () => {
+  const index = read("src/pages/index.astro");
+  const home = read("src/content/home.ts");
+
+  assert.ok(index.includes("completedGuideLinks"));
+  assert.ok(index.includes("Core guide entrances"));
+
+  for (const slug of wikiSlugs) {
+    assert.ok(home.includes(`slug: "${slug}"`), `home wikiLinks must include ${slug}`);
+  }
+});
+
+test("cluster pages link back to hub and related cluster pages", () => {
+  const related = read("src/components/RelatedGuides.astro");
+
+  assert.ok(related.includes('href="/"'));
+  assert.ok(related.includes("three-click rule"));
+  assert.ok(related.includes("wikiLinks"));
+
+  for (const slug of wikiSlugs) {
+    const page = read(`src/pages/${slug}.astro`);
+    assert.ok(page.includes("RelatedGuides"), `${slug} must include RelatedGuides`);
+    assert.ok(page.includes(`currentSlug="${slug}"`), `${slug} must pass currentSlug`);
+  }
 });
 
 test("init-new-site supports minimal and wiki-hub launch modes", () => {
