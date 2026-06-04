@@ -1,0 +1,33 @@
+---
+import { siteConfig } from "../data/config";
+import { wikiLinks } from "../content/home";
+
+interface Props {
+  currentSlug?: string;
+  title?: string;
+}
+
+const { currentSlug = "", title = "Related guides" } = Astro.props;
+const completed = new Set(siteConfig.completedCoreSlugs);
+const relatedLinks = wikiLinks.filter((link) => link.slug !== currentSlug && completed.has(link.slug));
+---
+
+<section class="section related-guides" aria-labelledby="related-guides">
+  <p class="eyebrow">Pillar cluster</p>
+  <h2 id="related-guides">{title}</h2>
+  <p>Use these links to stay within the three-click rule across the wiki hub.</p>
+  <div class="card-grid hub-grid">
+    <a class="card hub-card" href="/">
+      <h3>Wiki Hub</h3>
+      <p>Return to the pillar page for the full guide index.</p>
+      <span>Open hub</span>
+    </a>
+    {relatedLinks.map((link) => (
+      <a class="card hub-card" href={`/${link.slug}/`}>
+        <h3>{link.title}</h3>
+        <p>{link.description}</p>
+        <span>Open {link.title}</span>
+      </a>
+    ))}
+  </div>
+</section>
