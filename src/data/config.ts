@@ -22,6 +22,9 @@ export const siteConfig = {
   },
   assets: {
     icon: "/icon.svg",
-    hero: "/hero-placeholder.svg"
+    hero: "/hero-placeholder.svg",
+    iconTheme: "default",
+    brandColor: "#17241f",
+    accentColor: "#facc15"
   }
 };
