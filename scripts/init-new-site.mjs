@@ -3,15 +3,16 @@ import path from "node:path";
 
 const root = process.cwd();
 const args = process.argv.slice(2);
-const WIKI_HUB_SLUGS = ["", "codes", "guide", "tier-list", "classes", "updates"];
+const WIKI_HUB_SLUGS = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
 const MINIMAL_SLUGS = [""];
 const WIKI_PAGE_FILES = [
   "src/pages/codes.astro",
-  "src/pages/guide.astro",
   "src/pages/tier-list.astro",
   "src/pages/classes.astro",
-  "src/pages/updates.astro"
+  "src/pages/weapons.astro",
+  "src/pages/value-list.astro"
 ];
+const ICON_THEMES = ["default", "magic", "farm", "anime", "combat", "racing", "simulator"];
 
 function parseArgs(items) {
   const result = {};
@@ -31,7 +32,7 @@ function parseArgs(items) {
 }
 
 function usage() {
-  return `Usage:\n  npm run init:new-site -- --site-name "Example Guide" --game-name "Example Game" --domain "https://example.com" --contact-email "admin@example.com" --roblox-url "https://www.roblox.com/games/123/example" --launch-mode minimal\n\nRequired:\n  --site-name\n  --game-name\n  --domain\n  --contact-email\n  --roblox-url\n\nLaunch modes:\n  --launch-mode minimal\n  --launch-mode wiki-hub\n\nOptional:\n  --primary-keyword\n  --creator-name\n  --universe-id\n  --root-place-id\n  --max-players\n  --official-title\n  --genre\n`;
+  return `Usage:\n  npm run init:new-site -- --site-name "Example Guide" --game-name "Example Game" --domain "https://example.com" --contact-email "admin@example.com" --roblox-url "https://www.roblox.com/games/123/example" --launch-mode wiki-hub --icon-theme magic\n\nRequired:\n  --site-name\n  --game-name\n  --domain\n  --contact-email\n  --roblox-url\n\nLaunch modes:\n  --launch-mode minimal\n  --launch-mode wiki-hub\n\nOptional Roblox metadata:\n  --primary-keyword\n  --creator-name\n  --universe-id\n  --root-place-id\n  --max-players\n  --official-title\n  --genre\n\nOptional themed icon settings:\n  --icon-theme default|magic|farm|anime|combat|racing|simulator\n  --brand-color "#17241f"\n  --accent-color "#facc15"\n`;
 }
 
 function assertRequired(options, key) {
@@ -63,6 +64,11 @@ function numberOrNull(value, label) {
   if (!value) return null;
   if (!/^\d+$/.test(value)) throw new Error(`${label} must be a numeric value`);
   return Number(value);
+}
+
+function assertHexColor(label, value) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(value)) throw new Error(`${label} must be a hex color like #17241f`);
+  return value.toLowerCase();
 }
 
 function write(file, content) {
@@ -109,9 +115,15 @@ try {
   const universeId = numberOrNull(options["universe-id"], "--universe-id");
   const rootPlaceId = numberOrNull(options["root-place-id"], "--root-place-id");
   const maxPlayers = numberOrNull(options["max-players"], "--max-players");
+  const iconTheme = (options["icon-theme"] || "default").trim();
+  const brandColor = assertHexColor("--brand-color", options["brand-color"] || "#17241f");
+  const accentColor = assertHexColor("--accent-color", options["accent-color"] || "#facc15");
 
   if (!["minimal", "wiki-hub"].includes(launchMode)) {
     throw new Error("--launch-mode must be minimal or wiki-hub");
+  }
+  if (!ICON_THEMES.includes(iconTheme)) {
+    throw new Error(`--icon-theme must be one of: ${ICON_THEMES.join(", ")}`);
   }
 
   assertEmail(contactEmail);
@@ -132,12 +144,12 @@ try {
   defaultLocale: "en",
   availableLocales: ["en", "th", "fil", "id"],
   completedLocales: ["en"],
-  coreSlugs: ["", "codes", "guide", "tier-list", "classes", "updates"],
+  coreSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
   completedCoreSlugs: ${JSON.stringify(completedCoreSlugs)},
   englishOnlySlugs: [],
   completedEnglishOnlySlugs: [],
   blockedSlugs: ["scripts", "macros", "executor", "exploit"],
-  navigationSlugs: ["", "codes", "guide", "tier-list", "classes", "updates"],
+  navigationSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
   analytics: {
     googleAnalyticsId: "",
     adsenseClient: "",
@@ -146,7 +158,10 @@ try {
   },
   assets: {
     icon: "/icon.svg",
-    hero: "/hero-placeholder.svg"
+    hero: "/hero-placeholder.svg",
+    iconTheme: ${q(iconTheme)},
+    brandColor: ${q(brandColor)},
+    accentColor: ${q(accentColor)}
   }
 };`
   );
@@ -183,15 +198,15 @@ try {
 
 export const wikiLinks = [
   { title: "Codes", slug: "codes", description: "Track official and community-reported code status without inventing active rewards." },
-  { title: "Guide", slug: "guide", description: "Map beginner steps, core loop notes, and verified gameplay routes." },
   { title: "Tier List", slug: "tier-list", description: "Compare community-reported rankings without presenting them as official." },
   { title: "Classes", slug: "classes", description: "Map reported class roles and evidence status." },
-  { title: "Updates", slug: "updates", description: "Separate official updates from community-reported observations." }
+  { title: "Weapons", slug: "weapons", description: "Organize reported weapons without fake stats, DPS, or rarity claims." },
+  { title: "Value List", slug: "value-list", description: "Record reported value priority without fabricating trading prices or odds." }
 ];
 
 export const homeContent = {
   title: \`\${siteConfig.siteName} | Roblox Wiki Hub\`,
-  description: \`\${siteConfig.siteName} is an evidence-first Roblox wiki hub for codes, guide, tier list, classes, and updates.\`,
+  description: \`\${siteConfig.siteName} is an evidence-first Roblox wiki hub for codes, tier lists, classes, weapons, and value tracking.\`,
   hero: {
     eyebrow: "Roblox wiki hub",
     title: \`\${siteConfig.gameName} Wiki Hub\`,
@@ -201,24 +216,24 @@ export const homeContent = {
   quickFacts: [
     { label: "Evidence policy", value: "Verified / community-reported / pending" },
     { label: "Default language", value: "English" },
-    { label: "Language candidates", value: "English, Thai, Filipino, Indonesian" }
+    { label: "Click depth", value: "Core wiki pages stay within three clicks" }
   ],
   trendingSearches: [
     \`\${siteConfig.gameName} codes\`,
-    \`\${siteConfig.gameName} guide\`,
     \`\${siteConfig.gameName} tier list\`,
     \`\${siteConfig.gameName} classes\`,
-    \`\${siteConfig.gameName} updates\`
+    \`\${siteConfig.gameName} weapons\`,
+    \`\${siteConfig.gameName} value list\`
   ],
   wikiLinks,
   guideMap: [
-    { step: "1", title: "Collect sources", body: "Start from the Roblox page, official channels, public API data, and in-game checks." },
-    { step: "2", title: "Label evidence", body: "Separate verified facts from community-reported and pending notes." },
-    { step: "3", title: "Publish only completed pages", body: "Pages enter sitemap only after completedCoreSlugs includes them." }
+    { step: "1", title: "Start from the hub", body: "The homepage is the pillar page and links directly to every completed cluster page." },
+    { step: "2", title: "Move through clusters", body: "Each cluster page links back to the hub and to related cluster pages." },
+    { step: "3", title: "Keep evidence labels visible", body: "Pages enter sitemap only after completedCoreSlugs includes them and evidence boundaries are present." }
   ],
   faq: [
     { q: "Are community-reported codes verified?", a: "No. They are research signals until independently confirmed." },
-    { q: "Can this template publish translated pages immediately?", a: "No. A locale enters sitemap only after completedLocales includes it and localized content is ready." }
+    { q: "Can the wiki hub add more pages?", a: "Yes, but every public cluster page must stay linked from the hub and remain within three clicks." }
   ]
 };`
   );
@@ -244,7 +259,8 @@ export default defineConfig({
   console.log(`- Game: ${gameName}`);
   console.log(`- Domain: ${siteDomain}`);
   console.log(`- Launch mode: ${launchMode}`);
-  console.log("Next: run npm run check");
+  console.log(`- Icon theme: ${iconTheme}`);
+  console.log("Next: run npm run build, then npm run check");
 } catch (error) {
   console.error("init:new-site failed:");
   console.error(`- ${error.message}`);
