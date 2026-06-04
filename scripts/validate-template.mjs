@@ -5,6 +5,7 @@ const root = process.cwd();
 const violations = [];
 const wikiHubSlugs = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
 const expectedLocales = ["en", "th", "fil", "id"];
+const allowedIconThemes = ["default", "magic", "farm", "anime", "combat", "racing", "simulator"];
 
 const requiredFiles = [
   "astro.config.mjs",
@@ -110,6 +111,9 @@ if (exists("src/data/config.ts")) {
   const availableLocales = extractArray(config, "availableLocales");
   const completedLocales = extractArray(config, "completedLocales");
   const blockedSlugs = extractArray(config, "blockedSlugs");
+  const iconTheme = extractString(config, "iconTheme");
+  const brandColor = extractString(config, "brandColor");
+  const accentColor = extractString(config, "accentColor");
 
   if (launchMode !== "wiki-hub") violations.push("template default launchMode must be wiki-hub");
   if (completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) violations.push("template default completedCoreSlugs must match wiki hub slugs");
@@ -120,6 +124,9 @@ if (exists("src/data/config.ts")) {
   if (!["scripts", "macros", "executor", "exploit"].every((slug) => blockedSlugs.includes(slug))) {
     violations.push("blockedSlugs must include scripts, macros, executor, exploit");
   }
+  if (!allowedIconThemes.includes(iconTheme)) violations.push("assets.iconTheme must be a supported theme");
+  if (!/^#[0-9a-fA-F]{6}$/.test(brandColor)) violations.push("assets.brandColor must be a hex color");
+  if (!/^#[0-9a-fA-F]{6}$/.test(accentColor)) violations.push("assets.accentColor must be a hex color");
 }
 
 if (exists("src/lib/navigation.ts")) {
@@ -136,6 +143,15 @@ if (exists("src/data/game.ts")) {
   const game = read("src/data/game.ts");
   if (!game.includes("verifiedActiveCodes: []")) violations.push("verifiedActiveCodes must default to empty array");
   if (!game.includes("communityReportedCodes: []")) violations.push("communityReportedCodes must default to empty array");
+}
+
+if (exists("scripts/generate-favicons.mjs")) {
+  const faviconScript = read("scripts/generate-favicons.mjs");
+  for (const theme of allowedIconThemes) {
+    if (!faviconScript.includes(theme)) violations.push(`generate-favicons must support icon theme ${theme}`);
+  }
+  if (!faviconScript.includes("site.webmanifest")) violations.push("generate-favicons must generate site.webmanifest");
+  if (!faviconScript.includes("icon-512.png")) violations.push("generate-favicons must generate icon-512.png");
 }
 
 if (exists("src/data/reported-guides.ts")) {
