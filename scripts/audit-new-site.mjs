@@ -6,7 +6,7 @@ const configPath = path.join(root, "src/data/config.ts");
 const gamePath = path.join(root, "src/data/game.ts");
 const violations = [];
 const warnings = [];
-const wikiHubSlugs = ["", "codes", "guide", "tier-list", "classes", "updates"];
+const wikiHubSlugs = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
 const expectedLocales = ["en", "th", "fil", "id"];
 
 function read(file) {
@@ -91,12 +91,13 @@ if (!fs.existsSync(configPath)) {
   if (!completedCoreSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("completedCoreSlugs must be a subset of coreSlugs");
   if (completedEnglishOnlySlugs.length !== 0) violations.push("completedEnglishOnlySlugs must be empty by default");
   if (!navigationSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("navigationSlugs must be a subset of coreSlugs");
+  if (!navigationSlugs.every((slug) => wikiHubSlugs.includes(slug))) violations.push("navigationSlugs must use the wiki hub slugs only");
   if (!["scripts", "macros", "executor", "exploit"].every((slug) => blockedSlugs.includes(slug))) {
     violations.push("blockedSlugs must include scripts, macros, executor, and exploit");
   }
   if (launchMode === "minimal" && completedCoreSlugs.join(",") !== "") violations.push("minimal mode must complete homepage only");
   if (launchMode === "wiki-hub" && completedCoreSlugs.join(",") !== wikiHubSlugs.join(",")) {
-    violations.push("wiki-hub mode must complete homepage, codes, guide, tier-list, classes, and updates");
+    violations.push("wiki-hub mode must complete homepage, codes, tier-list, classes, weapons, and value-list");
   }
   validateAsset("assets.icon", icon);
   validateAsset("assets.hero", hero);
