@@ -1,0 +1,31 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import RelatedGuides from "../components/RelatedGuides.astro";
+import { siteConfig } from "../data/config";
+import { evidenceNotice, reportedValueRows } from "../data/reported-guides";
+---
+
+<SiteLayout title={`Value List | ${siteConfig.siteName}`} description={`Community-reported value priority research for ${siteConfig.gameName}.`}>
+  <main class="content-page">
+    <section class="prose-block">
+      <p class="eyebrow">Value list</p>
+      <h1>{siteConfig.gameName} Value List</h1>
+      <p>{evidenceNotice.body}</p>
+      <p>This page only tracks reported value priority. It does not publish verified trading values, DPS, crate odds, or market prices by default.</p>
+    </section>
+    <section class="section">
+      <h2>Reported value priority</h2>
+      <div class="card-grid">
+        {reportedValueRows.map((item) => (
+          <article class="card">
+            <h3>{item.item}</h3>
+            <p>Reported priority: {item.priority}</p>
+            <p>{item.note}</p>
+            <p class="source-label">{item.sourceLabel}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+    <RelatedGuides currentSlug="value-list" />
+  </main>
+</SiteLayout>
