@@ -74,6 +74,69 @@ Community-reported content is only a research signal and must not be presented a
 
 Do not invent active codes, rewards, class stats, weapon stats, rankings, value rows, or official claims.
 
+## Themed icons
+
+The template generates favicon and PWA assets from site configuration. New sites should not reuse a fixed template icon.
+
+Configuration lives in:
+
+```text
+src/data/config.ts
+```
+
+Supported icon settings:
+
+```text
+assets.iconTheme
+assets.brandColor
+assets.accentColor
+```
+
+Supported icon themes:
+
+```text
+default
+magic
+farm
+anime
+combat
+racing
+simulator
+```
+
+Example initialization:
+
+```bash
+npm run init:new-site -- \
+  --site-name "Example Game Guide" \
+  --game-name "Example Game" \
+  --domain "https://example.com" \
+  --contact-email "admin@example.com" \
+  --roblox-url "https://www.roblox.com/games/123/example" \
+  --launch-mode wiki-hub \
+  --icon-theme magic \
+  --brand-color "#17241f" \
+  --accent-color "#facc15"
+```
+
+During `npm run build`, the generator creates:
+
+```text
+favicon.ico
+favicon.svg
+icon.svg
+icon-16.png
+icon-32.png
+icon-48.png
+icon-96.png
+icon-192.png
+icon-512.png
+icon-192.webp
+icon-512.webp
+apple-touch-icon.png
+site.webmanifest
+```
+
 ## GA4 event tracking
 
 This template includes a minimal GA4 event helper for reusable event tracking.
@@ -140,7 +203,8 @@ npm run init:new-site -- \
   --domain "https://example.com" \
   --contact-email "admin@example.com" \
   --roblox-url "https://www.roblox.com/games/123/example" \
-  --launch-mode wiki-hub
+  --launch-mode wiki-hub \
+  --icon-theme magic
 ```
 
 Optional arguments:
@@ -153,6 +217,9 @@ Optional arguments:
 --max-players "12"
 --official-title "Example Game"
 --genre "Adventure"
+--icon-theme "magic"
+--brand-color "#17241f"
+--accent-color "#facc15"
 ```
 
 The initialization script updates:
