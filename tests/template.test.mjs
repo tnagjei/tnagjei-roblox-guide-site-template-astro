@@ -63,6 +63,9 @@ test("template defaults to wiki-hub launch mode", () => {
   assert.ok(config.includes('availableLocales: ["en", "th", "fil", "id"]'));
   assert.ok(config.includes('completedCoreSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"]'));
   assert.ok(config.includes('navigationSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"]'));
+  assert.ok(config.includes('iconTheme: "default"'));
+  assert.ok(config.includes('brandColor: "#17241f"'));
+  assert.ok(config.includes('accentColor: "#facc15"'));
   assert.ok(config.includes("completedEnglishOnlySlugs: []"));
 });
 
@@ -109,13 +112,31 @@ test("cluster pages link back to hub and related cluster pages", () => {
   }
 });
 
-test("init-new-site supports minimal and wiki-hub launch modes", () => {
+test("init-new-site supports minimal, wiki-hub, and themed icon options", () => {
   const script = read("scripts/init-new-site.mjs");
 
   assert.ok(script.includes("--launch-mode minimal"));
   assert.ok(script.includes("--launch-mode wiki-hub"));
+  assert.ok(script.includes("--icon-theme"));
+  assert.ok(script.includes("--brand-color"));
+  assert.ok(script.includes("--accent-color"));
+  assert.ok(script.includes("magic"));
+  assert.ok(script.includes("farm"));
+  assert.ok(script.includes("combat"));
   assert.ok(script.includes("completedCoreSlugs"));
   assert.ok(script.includes('availableLocales: ["en", "th", "fil", "id"]'));
+});
+
+test("themed favicon generator reads config and creates required assets", () => {
+  const script = read("scripts/generate-favicons.mjs");
+
+  for (const value of ["iconTheme", "brandColor", "accentColor", "gameInitials", "site.webmanifest", "favicon.svg", "icon-512.png", "apple-touch-icon.png"]) {
+    assert.ok(script.includes(value), `generate-favicons must include ${value}`);
+  }
+
+  for (const theme of ["default", "magic", "farm", "anime", "combat", "racing", "simulator"]) {
+    assert.ok(script.includes(theme), `generate-favicons must support ${theme}`);
+  }
 });
 
 test("system pages are noindex and not sitemap routes", () => {
