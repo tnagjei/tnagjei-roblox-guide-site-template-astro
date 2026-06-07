@@ -12,8 +12,22 @@ export const siteConfig = {
   completedCoreSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
   englishOnlySlugs: [],
   completedEnglishOnlySlugs: [],
+  systemSlugs: ["about", "contact", "editorial-policy"],
   blockedSlugs: ["scripts", "macros", "executor", "exploit"],
   navigationSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
+  publisher: {
+    displayName: "Example Publisher",
+    responseTime: "We usually review messages within 7 business days.",
+    country: ""
+  },
+  systemPages: {
+    about: true,
+    contact: true,
+    privacy: true,
+    terms: true,
+    editorialPolicy: true,
+    adPolicy: false
+  },
   analytics: {
     googleAnalyticsId: "",
     adsenseClient: "",
