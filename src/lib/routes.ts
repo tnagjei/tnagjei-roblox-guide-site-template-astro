@@ -1,6 +1,9 @@
 import { siteConfig } from "../data/config";
 
 export const systemRoutes = [
+  { path: "/about/", htmlFile: "about/index.html", label: "About" },
+  { path: "/contact/", htmlFile: "contact/index.html", label: "Contact" },
+  { path: "/editorial-policy/", htmlFile: "editorial-policy/index.html", label: "Editorial Policy" },
   { path: "/privacy/", htmlFile: "privacy/index.html", label: "Privacy" },
   { path: "/terms/", htmlFile: "terms/index.html", label: "Terms" }
 ];

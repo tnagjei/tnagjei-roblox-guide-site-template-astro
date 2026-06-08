@@ -36,9 +36,30 @@ function pathForSlug(slug) {
 const siteDomain = extractString(configText, "siteDomain", "https://example.com").replace(/\/+$/g, "");
 const completedCoreSlugs = extractArray(configText, "completedCoreSlugs");
 const completedEnglishOnlySlugs = extractArray(configText, "completedEnglishOnlySlugs");
+const systemSlugs = extractArray(configText, "systemSlugs");
 const blockedSlugs = extractArray(configText, "blockedSlugs");
-const completedSlugs = [...completedCoreSlugs, ...completedEnglishOnlySlugs].filter((slug) => !blockedSlugs.includes(slug));
-const expectedHtml = new Set(["privacy/index.html", "terms/index.html", ...completedSlugs.map(htmlForSlug)]);
+const sitemapExcludedSlugs = new Set([
+  "privacy",
+  "terms",
+  "guide",
+  "updates",
+  "scripts",
+  "macros",
+  "executor",
+  "exploit",
+  "th",
+  "fil",
+  "id",
+  ...blockedSlugs
+]);
+const htmlExcludedSlugs = new Set(["guide", "updates", "scripts", "macros", "executor", "exploit", "th", "fil", "id"]);
+const sitemapSlugs = Array.from(new Set([...completedCoreSlugs, ...completedEnglishOnlySlugs, ...systemSlugs])).filter(
+  (slug) => !sitemapExcludedSlugs.has(slug)
+);
+const expectedHtmlSlugs = Array.from(
+  new Set([...completedCoreSlugs, ...completedEnglishOnlySlugs, ...systemSlugs, "privacy", "terms"])
+).filter((slug) => !htmlExcludedSlugs.has(slug));
+const expectedHtml = new Set(expectedHtmlSlugs.map(htmlForSlug));
 const required = ["sitemap.xml", "robots.txt", "llms.txt", "llms-full.txt", ...expectedHtml];
 
 if (!fs.existsSync(distDir)) {
@@ -66,18 +87,38 @@ const sitemap = fs.existsSync(sitemapPath) ? fs.readFileSync(sitemapPath, "utf8"
 const robots = fs.existsSync(robotsPath) ? fs.readFileSync(robotsPath, "utf8") : "";
 const sitemapLocs = Array.from(sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)).map((match) => match[1]);
 
-if (sitemapLocs.length !== completedSlugs.length) {
-  violations.push(`sitemap URL count must equal completed slug count ${completedSlugs.length}, got ${sitemapLocs.length}`);
+if (sitemapLocs.length !== sitemapSlugs.length) {
+  violations.push(`sitemap URL count must equal completed and allowed system slug count ${sitemapSlugs.length}, got ${sitemapLocs.length}`);
 }
 
-for (const slug of completedSlugs) {
+for (const slug of sitemapSlugs) {
   const expectedUrl = `${siteDomain}${pathForSlug(slug)}`;
   if (!sitemapLocs.includes(expectedUrl)) {
     violations.push(`sitemap missing completed route: ${expectedUrl}`);
   }
 }
 
-for (const forbidden of ["/privacy/", "/terms/", "/zh-tw/", "/th/", "/scripts/", "/macros/", "/executor/", "/exploit/"]) {
+for (const slug of ["about", "contact", "editorial-policy"]) {
+  const expectedUrl = `${siteDomain}${pathForSlug(slug)}`;
+  if (!sitemapLocs.includes(expectedUrl)) {
+    violations.push(`sitemap missing system route: ${expectedUrl}`);
+  }
+}
+
+for (const forbidden of [
+  "/privacy/",
+  "/terms/",
+  "/zh-tw/",
+  "/th/",
+  "/fil/",
+  "/id/",
+  "/guide/",
+  "/updates/",
+  "/scripts/",
+  "/macros/",
+  "/executor/",
+  "/exploit/"
+]) {
   if (sitemap.includes(forbidden)) violations.push(`sitemap must not include ${forbidden}`);
 }
 

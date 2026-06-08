@@ -7,7 +7,27 @@ const gamePath = path.join(root, "src/data/game.ts");
 const violations = [];
 const warnings = [];
 const wikiHubSlugs = ["", "codes", "tier-list", "classes", "weapons", "value-list"];
+const systemSlugs = ["about", "contact", "editorial-policy"];
 const expectedLocales = ["en", "th", "fil", "id"];
+const requiredSystemFiles = [
+  "src/content/system-pages.ts",
+  "src/pages/about.astro",
+  "src/pages/contact.astro",
+  "src/pages/editorial-policy.astro",
+  "src/pages/privacy.astro",
+  "src/pages/terms.astro"
+];
+const forbiddenDefaultPages = [
+  "src/pages/guide.astro",
+  "src/pages/updates.astro",
+  "src/pages/scripts.astro",
+  "src/pages/macros.astro",
+  "src/pages/executor.astro",
+  "src/pages/exploit.astro",
+  "src/pages/th.astro",
+  "src/pages/fil.astro",
+  "src/pages/id.astro"
+];
 
 function read(file) {
   return fs.readFileSync(path.join(root, file), "utf8");
@@ -76,6 +96,8 @@ if (!fs.existsSync(configPath)) {
   const completedEnglishOnlySlugs = extractArray(config, "completedEnglishOnlySlugs");
   const navigationSlugs = extractArray(config, "navigationSlugs");
   const blockedSlugs = extractArray(config, "blockedSlugs");
+  const configuredSystemSlugs = extractArray(config, "systemSlugs");
+  const publisherDisplayName = extractString(config, "displayName");
   const icon = extractString(config, "icon");
   const hero = extractString(config, "hero");
 
@@ -83,6 +105,7 @@ if (!fs.existsSync(configPath)) {
   if (gameName === "Example Roblox Game") reportLaunchIssue("gameName must be replaced before launch");
   if (siteDomain === "https://example.com") reportLaunchIssue("siteDomain must be replaced before launch");
   if (contactEmail === "example@example.com") reportLaunchIssue("contactEmail must be replaced before launch");
+  if (publisherDisplayName === "Example Publisher") reportLaunchIssue("publisher.displayName must be replaced before launch");
   if (primaryKeyword === "Example Roblox Game guide") reportLaunchIssue("primaryKeyword must be replaced before launch");
   if (!siteDomain.startsWith("https://")) violations.push("siteDomain must start with https://");
   if (availableLocales.join(",") !== expectedLocales.join(",")) violations.push("availableLocales must be en, th, fil, id");
@@ -92,6 +115,15 @@ if (!fs.existsSync(configPath)) {
   if (completedEnglishOnlySlugs.length !== 0) violations.push("completedEnglishOnlySlugs must be empty by default");
   if (!navigationSlugs.every((slug) => coreSlugs.includes(slug))) violations.push("navigationSlugs must be a subset of coreSlugs");
   if (!navigationSlugs.every((slug) => wikiHubSlugs.includes(slug))) violations.push("navigationSlugs must use the wiki hub slugs only");
+  if (configuredSystemSlugs.join(",") !== systemSlugs.join(",")) {
+    violations.push("systemSlugs must be about, contact, and editorial-policy");
+  }
+  if (configuredSystemSlugs.includes("privacy") || configuredSystemSlugs.includes("terms")) {
+    violations.push("privacy and terms must not be listed in systemSlugs");
+  }
+  for (const flag of ["about: true", "contact: true", "privacy: true", "terms: true", "editorialPolicy: true"]) {
+    if (!config.includes(flag)) violations.push(`systemPages must include ${flag}`);
+  }
   if (!["scripts", "macros", "executor", "exploit"].every((slug) => blockedSlugs.includes(slug))) {
     violations.push("blockedSlugs must include scripts, macros, executor, and exploit");
   }
@@ -101,6 +133,39 @@ if (!fs.existsSync(configPath)) {
   }
   validateAsset("assets.icon", icon);
   validateAsset("assets.hero", hero);
+}
+
+for (const file of requiredSystemFiles) {
+  if (!fs.existsSync(path.join(root, file))) violations.push(`Missing required system page file: ${file}`);
+}
+
+for (const file of forbiddenDefaultPages) {
+  if (fs.existsSync(path.join(root, file))) violations.push(`Forbidden default page exists: ${file}`);
+}
+
+if (fs.existsSync(path.join(root, "src/components/Footer.astro"))) {
+  const footer = read("src/components/Footer.astro");
+  for (const [label, href] of [
+    ["About", "/about/"],
+    ["Contact", "/contact/"],
+    ["Privacy", "/privacy/"],
+    ["Terms", "/terms/"],
+    ["Editorial Policy", "/editorial-policy/"]
+  ]) {
+    if (!footer.includes(`href="${href}"`) || !footer.includes(`>${label}<`)) {
+      violations.push(`Footer must include ${label} link to ${href}`);
+    }
+  }
+}
+
+if (fs.existsSync(path.join(root, "src/content/system-pages.ts"))) {
+  const systemPages = read("src/content/system-pages.ts");
+  for (const key of ["about", "contact", "editorialPolicy", "privacy", "terms"]) {
+    if (!systemPages.includes(`${key}:`)) violations.push(`systemPageContent must include ${key}`);
+  }
+  for (const forbidden of ["Your Company Name", "Lorem ipsum", "TODO", "TBD", "Coming soon", "Replace this"]) {
+    if (systemPages.includes(forbidden)) violations.push(`system-pages content must not contain ${forbidden}`);
+  }
 }
 
 if (fs.existsSync(gamePath)) {

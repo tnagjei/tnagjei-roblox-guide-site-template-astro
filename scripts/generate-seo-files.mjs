@@ -38,13 +38,27 @@ const launchMode = extractString(configText, "launchMode", "minimal");
 const completedLocales = extractArray(configText, "completedLocales");
 const completedCoreSlugs = extractArray(configText, "completedCoreSlugs");
 const completedEnglishOnlySlugs = extractArray(configText, "completedEnglishOnlySlugs");
+const systemSlugs = extractArray(configText, "systemSlugs");
 const blockedSlugs = extractArray(configText, "blockedSlugs");
 const robloxUrl = extractString(gameText, "robloxUrl", "https://www.roblox.com/");
+const excludedSitemapSlugs = new Set([
+  "privacy",
+  "terms",
+  "guide",
+  "updates",
+  "scripts",
+  "macros",
+  "executor",
+  "exploit",
+  "th",
+  "fil",
+  "id",
+  ...blockedSlugs
+]);
 
-const routes = [
-  ...completedCoreSlugs.map((slug) => ({ slug, path: routePath(slug) })),
-  ...completedEnglishOnlySlugs.map((slug) => ({ slug, path: routePath(slug) }))
-].filter((route) => !blockedSlugs.includes(route.slug));
+const routes = Array.from(new Set([...completedCoreSlugs, ...completedEnglishOnlySlugs, ...systemSlugs]))
+  .filter((slug) => !excludedSitemapSlugs.has(slug))
+  .map((slug) => ({ slug, path: routePath(slug) }));
 
 if (!fs.existsSync(distDir)) {
   throw new Error("dist/ does not exist. Run astro build before generating SEO files.");

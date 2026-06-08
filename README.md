@@ -37,6 +37,9 @@ Publishes only:
 
 ```text
 /
+/about/
+/contact/
+/editorial-policy/
 /privacy/
 /terms/
 ```
@@ -52,11 +55,41 @@ Publishes:
 /classes/
 /weapons/
 /value-list/
+/about/
+/contact/
+/editorial-policy/
 /privacy/
 /terms/
 ```
 
-Privacy and terms are exported but excluded from sitemap.
+About, contact, and editorial policy are exported and included in sitemap. Privacy and terms are exported but excluded from sitemap.
+
+## AdSense readiness checklist
+
+Before review, verify:
+
+```text
+/about/ exists and explains site ownership and evidence boundaries
+/contact/ exists and gives a reachable contact path
+/editorial-policy/ exists and explains verification, corrections, and unsafe content boundaries
+/privacy/ exists, outputs HTML, and remains noindex
+/terms/ exists, outputs HTML, and remains noindex
+Footer links to About, Contact, Privacy, Terms, and Editorial Policy
+sitemap.xml includes /, /codes/, /tier-list/, /classes/, /weapons/, /value-list/, /about/, /contact/, and /editorial-policy/
+sitemap.xml excludes /privacy/, /terms/, /guide/, /updates/, /scripts/, /macros/, /executor/, /exploit/, /th/, /fil/, and /id/
+No fake active codes, rewards, value rows, or official claims are published
+No unsafe exploit, executor, macro, or script pages are generated
+```
+
+Run before review:
+
+```bash
+npm run validate:template
+npm test
+npm run build
+npm run validate:static-export
+npm run check
+```
 
 ## Evidence policy
 
@@ -177,6 +210,27 @@ llms-full.txt
 ```
 
 These files are written to `dist/` during `npm run build`.
+
+Default sitemap routes are:
+
+```text
+/
+/codes/
+/tier-list/
+/classes/
+/weapons/
+/value-list/
+/about/
+/contact/
+/editorial-policy/
+```
+
+Default HTML output also includes:
+
+```text
+/privacy/
+/terms/
+```
 
 ## Create a new site
 

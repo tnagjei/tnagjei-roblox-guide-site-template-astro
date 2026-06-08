@@ -2,13 +2,13 @@
 import SiteLayout from "../layouts/SiteLayout.astro";
 import { systemPageContent } from "../content/system-pages";
 
-const page = systemPageContent.privacy;
+const page = systemPageContent.contact;
 ---
 
-<SiteLayout title={page.title} description={page.description} noindex>
+<SiteLayout title={page.title} description={page.description}>
   <main class="content-page">
     <section class="prose-block">
-      <p class="eyebrow">Privacy</p>
+      <p class="eyebrow">Contact</p>
       <h1>{page.title}</h1>
       {page.sections.map((section) => (
         <>

@@ -148,8 +148,22 @@ try {
   completedCoreSlugs: ${JSON.stringify(completedCoreSlugs)},
   englishOnlySlugs: [],
   completedEnglishOnlySlugs: [],
+  systemSlugs: ["about", "contact", "editorial-policy"],
   blockedSlugs: ["scripts", "macros", "executor", "exploit"],
   navigationSlugs: ["", "codes", "tier-list", "classes", "weapons", "value-list"],
+  publisher: {
+    displayName: ${q(siteName)},
+    responseTime: "We usually review messages within 7 business days.",
+    country: ""
+  },
+  systemPages: {
+    about: true,
+    contact: true,
+    privacy: true,
+    terms: true,
+    editorialPolicy: true,
+    adPolicy: false
+  },
   analytics: {
     googleAnalyticsId: "",
     adsenseClient: "",

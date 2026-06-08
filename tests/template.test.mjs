@@ -19,6 +19,7 @@ const wikiSlugs = ["codes", "tier-list", "classes", "weapons", "value-list"];
 const requiredFiles = [
   "astro.config.mjs",
   "src/data/reported-guides.ts",
+  "src/content/system-pages.ts",
   "src/lib/navigation.ts",
   "src/lib/analytics.ts",
   "src/components/TrackedLink.astro",
@@ -27,6 +28,9 @@ const requiredFiles = [
   "src/components/RelatedGuides.astro",
   "docs/ANALYTICS_EVENTS.md",
   "src/pages/index.astro",
+  "src/pages/about.astro",
+  "src/pages/contact.astro",
+  "src/pages/editorial-policy.astro",
   "src/pages/privacy.astro",
   "src/pages/terms.astro",
   "src/layouts/SiteLayout.astro",
@@ -67,6 +71,9 @@ test("template defaults to wiki-hub launch mode", () => {
   assert.ok(config.includes('brandColor: "#17241f"'));
   assert.ok(config.includes('accentColor: "#facc15"'));
   assert.ok(config.includes("completedEnglishOnlySlugs: []"));
+  assert.ok(config.includes('systemSlugs: ["about", "contact", "editorial-policy"]'));
+  assert.ok(config.includes("publisher:"));
+  assert.ok(config.includes("systemPages:"));
 });
 
 test("navigation exposes wiki hub links and language candidates", () => {
@@ -124,6 +131,9 @@ test("init-new-site supports minimal, wiki-hub, and themed icon options", () => 
   assert.ok(script.includes("farm"));
   assert.ok(script.includes("combat"));
   assert.ok(script.includes("completedCoreSlugs"));
+  assert.ok(script.includes('systemSlugs: ["about", "contact", "editorial-policy"]'));
+  assert.ok(script.includes("publisher:"));
+  assert.ok(script.includes("systemPages:"));
   assert.ok(script.includes('availableLocales: ["en", "th", "fil", "id"]'));
 });
 
@@ -146,18 +156,77 @@ test("system pages are noindex and not sitemap routes", () => {
 
   assert.ok(privacy.includes("noindex"));
   assert.ok(terms.includes("noindex"));
+  assert.ok(privacy.includes("systemPageContent"));
+  assert.ok(terms.includes("systemPageContent"));
   assert.equal(generator.includes("/privacy/"), false);
   assert.equal(generator.includes("/terms/"), false);
 });
 
-test("completed slugs drive sitemap and static export validation", () => {
+test("AdSense readiness system pages exist and are wired through content", () => {
+  const systemPages = read("src/content/system-pages.ts");
+
+  for (const key of ["about", "contact", "editorialPolicy", "privacy", "terms"]) {
+    assert.ok(systemPages.includes(`${key}:`), `systemPageContent must include ${key}`);
+  }
+
+  for (const file of ["src/pages/about.astro", "src/pages/contact.astro", "src/pages/editorial-policy.astro", "src/pages/privacy.astro", "src/pages/terms.astro"]) {
+    assert.ok(read(file).includes("systemPageContent"), `${file} must read systemPageContent`);
+  }
+});
+
+test("footer links to AdSense readiness pages", () => {
+  const footer = read("src/components/Footer.astro");
+
+  for (const fragment of ['href="/about/"', 'href="/contact/"', 'href="/privacy/"', 'href="/terms/"', 'href="/editorial-policy/"']) {
+    assert.ok(footer.includes(fragment), `Footer must include ${fragment}`);
+  }
+
+  for (const label of ["About", "Contact", "Privacy", "Terms", "Editorial Policy"]) {
+    assert.ok(footer.includes(`>${label}<`), `Footer must include ${label}`);
+  }
+});
+
+test("system page content avoids unsafe placeholders and fake certainty", () => {
+  const systemPages = read("src/content/system-pages.ts");
+
+  for (const forbidden of ["Your Company Name", "Lorem ipsum", "TODO", "TBD", "Coming soon", "Replace this"]) {
+    assert.equal(systemPages.includes(forbidden), false, `system pages must not include ${forbidden}`);
+  }
+
+  for (const phrase of ["Roblox passwords", "payment information", "identity documents"]) {
+    assert.ok(systemPages.includes(phrase), `system pages must mention ${phrase}`);
+  }
+
+  for (const label of ["verified", "community-reported", "pending"]) {
+    assert.ok(systemPages.includes(label), `editorial policy must mention ${label}`);
+  }
+});
+
+test("completed and allowed system slugs drive sitemap and static export validation", () => {
   const generator = read("scripts/generate-seo-files.mjs");
   const validator = read("scripts/validate-static-export.mjs");
 
   assert.ok(generator.includes("completedCoreSlugs"));
   assert.ok(generator.includes("completedEnglishOnlySlugs"));
+  assert.ok(generator.includes("systemSlugs"));
   assert.ok(validator.includes("completedCoreSlugs"));
-  assert.ok(validator.includes("sitemap URL count must equal completed slug count"));
+  assert.ok(validator.includes("systemSlugs"));
+  assert.ok(validator.includes("sitemap URL count must equal completed and allowed system slug count"));
+  assert.ok(validator.includes('"privacy", "terms"'));
+});
+
+test("allowed system pages enter sitemap and forbidden routes stay excluded", () => {
+  const generator = read("scripts/generate-seo-files.mjs");
+  const validator = read("scripts/validate-static-export.mjs");
+
+  for (const slug of ["about", "contact", "editorial-policy"]) {
+    assert.ok(validator.includes(slug), `${slug} must be required in sitemap validation`);
+  }
+
+  for (const slug of ["privacy", "terms", "guide", "updates", "scripts", "macros", "executor", "exploit", "th", "fil", "id"]) {
+    assert.ok(generator.includes(`"${slug}"`), `generator must explicitly exclude ${slug}`);
+    assert.ok(validator.includes(`/${slug}/`), `validator must reject ${slug} sitemap output`);
+  }
 });
 
 test("unsafe pages and removed legacy pages are not generated", () => {
