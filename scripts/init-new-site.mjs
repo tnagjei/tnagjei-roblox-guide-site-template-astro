@@ -32,7 +32,7 @@ function parseArgs(items) {
 }
 
 function usage() {
-  return `Usage:\n  npm run init:new-site -- --site-name "Example Guide" --game-name "Example Game" --domain "https://example.com" --contact-email "admin@example.com" --roblox-url "https://www.roblox.com/games/123/example" --launch-mode wiki-hub --icon-theme magic\n\nRequired:\n  --site-name\n  --game-name\n  --domain\n  --contact-email\n  --roblox-url\n\nLaunch modes:\n  --launch-mode minimal\n  --launch-mode wiki-hub\n\nOptional Roblox metadata:\n  --primary-keyword\n  --creator-name\n  --universe-id\n  --root-place-id\n  --max-players\n  --official-title\n  --genre\n\nOptional themed icon settings:\n  --icon-theme default|magic|farm|anime|combat|racing|simulator\n  --brand-color "#17241f"\n  --accent-color "#facc15"\n`;
+  return `Usage:\n  npm run init:new-site -- --site-name "Example Guide" --game-name "Example Game" --domain "https://example.com" --contact-email "admin@example.com" --roblox-url "https://www.roblox.com/games/123/example" --icon-theme magic\n\nRequired:\n  --site-name\n  --game-name\n  --domain\n  --contact-email\n  --roblox-url\n\nDefault launch mode:\n  wiki-hub\n\nLaunch modes:\n  --launch-mode wiki-hub\n  --launch-mode minimal\n\nOptional Roblox metadata:\n  --primary-keyword\n  --creator-name\n  --universe-id\n  --root-place-id\n  --max-players\n  --official-title\n  --genre\n\nOptional themed icon settings:\n  --icon-theme default|magic|farm|anime|combat|racing|simulator\n  --brand-color "#17241f"\n  --accent-color "#facc15"\n`;
 }
 
 function assertRequired(options, key) {
@@ -107,7 +107,7 @@ try {
   const siteDomain = assertHttpsUrl("--domain", options.domain.trim());
   const contactEmail = options["contact-email"].trim();
   const robloxUrl = assertHttpsUrl("--roblox-url", options["roblox-url"].trim());
-  const launchMode = (options["launch-mode"] || "minimal").trim();
+  const launchMode = (options["launch-mode"] || "wiki-hub").trim();
   const primaryKeyword = (options["primary-keyword"] || `${gameName} guide`).trim();
   const creatorName = (options["creator-name"] || "Unknown creator").trim();
   const officialTitle = (options["official-title"] || gameName).trim();
